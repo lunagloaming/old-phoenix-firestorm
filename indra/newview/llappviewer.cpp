@@ -306,6 +306,7 @@ using namespace LL;
 #include "fsradar.h"
 #include "fsassetblacklist.h"
 #include "fsrebuildtrace.h" // <FS:Luna Witch/>
+#include "fsinstanceslots.h" // <FS:Luna Witch/>
 #include "bugsplatattributes.h"
 
 #ifdef LL_DISCORD
@@ -1031,6 +1032,12 @@ bool LLAppViewer::init()
         app_metrics_interval = METRICS_INTERVAL_QA;
     }
     LLViewerAssetStatsFF::init();
+
+    // <FS:Luna Witch> Claim an instance slot in the cache directory before sizing threads and opening caches.
+    // initCache() sets the cache directory again (and handles a pending location change); this only resolves it early.
+    gDirUtilp->setCacheDir(gSavedSettings.getString("CacheLocation"));
+    FSInstanceSlots::instance().acquire(gDirUtilp->getCacheDir());
+    // </FS:Luna Witch>
 
     initThreads();
     LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
@@ -2295,7 +2302,18 @@ bool LLAppViewer::cleanup()
     // save their rects on delete.
     if(mSaveSettingsOnExit)     // <FS:Zi> Backup Settings
     {
-        gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), true);
+        // <FS:Luna Witch> Another instance shares this settings.xml; whichever exits last would overwrite the other's.
+        // Preferences changed through the Preferences floater are already saved when it is closed with OK.
+        //gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), true);
+        if (mSecondInstance)
+        {
+            LL_INFOS() << "Not saving global settings on exit: another instance shares this user directory." << LL_ENDL;
+        }
+        else
+        {
+            gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), true);
+        }
+        // </FS:Luna Witch>
 
     LLUIColorTable::instance().saveUserSettings();
 
@@ -2649,6 +2667,12 @@ bool LLAppViewer::initThreads()
     // <FS:Ansariel> Override image decode thread config
     //S32 image_decode_count = llclamp(cores - 6, 2, 16);
     S32 image_decode_count = llclamp(cores - 4, 2, 8);
+    // <FS:Luna Witch> Share the automatic decode thread budget with other running instances
+    if (S32 instances = FSInstanceSlots::instance().getActiveInstanceCount(); instances > 1)
+    {
+        image_decode_count = llmax(2, image_decode_count / instances);
+    }
+    // </FS:Luna Witch>
     if (auto max_decodes = gSavedSettings.getU32("FSImageDecodeThreads"); max_decodes > 0)
     {
         image_decode_count = llclamp((S32)max_decodes, 1, 32);
@@ -5536,9 +5560,17 @@ bool LLAppViewer::initCache()
 {
     LL_PROFILE_ZONE_SCOPED;
     mPurgeCache = false;
-    bool read_only = mSecondInstance;
+    // <FS:Luna Witch> Shared caches are owned by whichever instance holds cache slot 0, not by the exec marker in
+    // the logs directory: instances with separate user directories can still share one cache location.
+    // Other slots get their own writable object cache instead of a read-only shared one.
+    //bool read_only = mSecondInstance;
+    //LLAppViewer::getTextureCache()->setReadOnly(read_only) ;
+    //LLVOCache::initParamSingleton(read_only);
+    FSInstanceSlots& instance_slots = FSInstanceSlots::instance();
+    bool read_only = !instance_slots.ownsSharedCache();
     LLAppViewer::getTextureCache()->setReadOnly(read_only) ;
-    LLVOCache::initParamSingleton(read_only);
+    LLVOCache::initParamSingleton(instance_slots.getSlot() < 0);
+    // </FS:Luna Witch>
 
     // initialize the new disk cache using saved settings
     const std::string cache_dir_name = gSavedSettings.getString("DiskCacheDirName");
@@ -5725,7 +5757,11 @@ bool LLAppViewer::initCache()
     LLAppViewer::getTextureCache()->initCache(LL_PATH_CACHE, texture_cache_size, texture_cache_mismatch);
 
     const U32 CACHE_NUMBER_OF_REGIONS_FOR_OBJECTS = 128;
-    LLVOCache::getInstance()->initCache(LL_PATH_CACHE, CACHE_NUMBER_OF_REGIONS_FOR_OBJECTS, getObjectCacheVersion());
+    // <FS:Luna Witch> Per-slot object cache directory ("objectcache" for slot 0, "objectcache_<n>" otherwise)
+    //LLVOCache::getInstance()->initCache(LL_PATH_CACHE, CACHE_NUMBER_OF_REGIONS_FOR_OBJECTS, getObjectCacheVersion());
+    LLVOCache::getInstance()->initCache(LL_PATH_CACHE, CACHE_NUMBER_OF_REGIONS_FOR_OBJECTS, getObjectCacheVersion(),
+                                        instance_slots.getSlotDirName("objectcache"));
+    // </FS:Luna Witch>
 
     // Remove old, stale CEF cache folders
     // <FS:TJ> Purge CEF cache in another thread to prevent very slow startup times
