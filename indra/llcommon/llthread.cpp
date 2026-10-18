@@ -40,6 +40,7 @@
 
 #if LL_LINUX
 #include <sched.h>
+#include <pthread.h> // <FS:Luna Witch/> pthread_setname_np
 #endif
 
 #if LL_DARWIN || LL_LINUX
@@ -159,12 +160,39 @@ LL_COMMON_API bool assert_main_thread()
     return false;
 }
 
+// <FS:Luna Witch> Name threads on Linux so per-thread CPU placement and load can be inspected
+LL_COMMON_API void ll_set_current_thread_name(const std::string& name)
+{
+#if LL_LINUX
+    // Linux limits thread names to 15 characters. Keep a pool worker's ":i/n" suffix intact
+    // and shorten the part before it, e.g. "MeshLodProcessing:1/2" -> "MeshLodPr:1/2".
+    constexpr size_t MAX_LEN = 15;
+    std::string short_name = name;
+    if (short_name.size() > MAX_LEN)
+    {
+        const size_t colon = short_name.rfind(':');
+        if (colon != std::string::npos && colon > 0 && short_name.size() - colon < MAX_LEN)
+        {
+            const std::string suffix = short_name.substr(colon);
+            short_name = short_name.substr(0, MAX_LEN - suffix.size()) + suffix;
+        }
+        else
+        {
+            short_name.resize(MAX_LEN);
+        }
+    }
+    pthread_setname_np(pthread_self(), short_name.c_str());
+#endif
+}
+// </FS:Luna Witch>
+
 //
 // Handed to the APR thread creation function
 //
 void LLThread::threadRun()
 {
     set_thread_name(mName.c_str());
+    ll_set_current_thread_name(mName); // <FS:Luna Witch/> keeps a pool worker's ":i/n" suffix in the 15-character name
     LL_PROFILER_SET_THREAD_NAME( mName.c_str() );
 
     // this is the first point at which we're actually running in the new thread

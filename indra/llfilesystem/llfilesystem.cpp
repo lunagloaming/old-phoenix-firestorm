@@ -266,13 +266,27 @@ bool LLFileSystem::write(const U8* buffer, S32 bytes)
     }
     else
     {
-        LLFILE* ofs = LLFile::fopen(mPath, LLFILE_MODE("wb"));
+        // <FS:Luna Witch> Write whole files to a temporary name and rename it into place, so another viewer
+        // instance sharing this cache never reads a truncated or half-written file. The temporary name keeps
+        // the cache prefix so the disk cache purge still cleans up any left behind by a crash.
+        //LLFILE* ofs = LLFile::fopen(mPath, LLFILE_MODE("wb"));
+        std::filesystem::path tmp_path = mPath;
+        tmp_path += ".tmp" + LLUUID::generateNewID().asString();
+        LLFILE* ofs = LLFile::fopen(tmp_path, LLFILE_MODE("wb"));
+        // </FS:Luna Witch>
         if (ofs)
         {
             S32 bytes_written = static_cast<S32>(fwrite(buffer, 1, bytes, ofs));
             mPosition = ftell(ofs);
             fclose(ofs);
             success = (bytes_written == bytes);
+            // <FS:Luna Witch>
+            success = success && (LLFile::rename(tmp_path, mPath) == 0);
+            if (!success)
+            {
+                LLFile::remove(tmp_path);
+            }
+            // </FS:Luna Witch>
         }
     }
     // </FS:Ansariel>
