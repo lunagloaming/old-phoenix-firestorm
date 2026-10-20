@@ -302,6 +302,7 @@ using namespace LL;
 #include "aoengine.h"
 #include "fsradar.h"
 #include "fsassetblacklist.h"
+#include "fsrebuildtrace.h" // <FS:Luna Witch/>
 #include "bugsplatattributes.h"
 
 #if LL_LINUX && LL_GTK
@@ -5924,6 +5925,9 @@ void LLAppViewer::idle()
     LLVertexBuffer::sGPUCopyUpload = vbo_gpu_copy_upload;
     static LLCachedControl<bool> vbo_alloc_trace(gSavedSettings, "FSVBOAllocTrace");
     LLVertexBuffer::sAllocTrace = vbo_alloc_trace;
+    FSRebuildTrace::idle();
+    static LLCachedControl<F32> octree_bridge_move_slack(gSavedSettings, "FSOctreeBridgeMoveSlack");
+    LLSpatialGroup::sBridgeMoveSlack = octree_bridge_move_slack;
     static LLCachedControl<S32> heap_decay_ms(gSavedSettings, "FSHeapDecayMs");
     static S32 applied_heap_decay_ms = -1;
     if (heap_decay_ms != applied_heap_decay_ms)
