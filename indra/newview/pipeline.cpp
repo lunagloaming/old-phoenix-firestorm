@@ -133,6 +133,7 @@
 #include "SMAAAreaTex.h"
 #include "SMAASearchTex.h"
 #include "llerror.h"
+#include "fsrebuildtrace.h" // <FS:Luna Witch/>
 
 #if LL_CLANG
 #pragma clang diagnostic push
@@ -3282,6 +3283,7 @@ void LLPipeline::markRebuild(LLSpatialGroup* group)
         {
             llassert_always(!mGroupQ1Locked);
 
+            FSRebuildTrace::markGroup(group); // <FS:Luna Witch/>
             mGroupQ1.push_back(group);
             group->setState(LLSpatialGroup::IN_BUILD_Q1);
         }
@@ -3292,6 +3294,7 @@ void LLPipeline::markRebuild(LLDrawable *drawablep, LLDrawable::EDrawableFlags f
 {
     if (drawablep && !drawablep->isDead() && assertInitialized())
     {
+        FSRebuildTrace::markDrawable(drawablep, flag); // <FS:Luna Witch/>
         if (!drawablep->isState(LLDrawable::IN_REBUILD_Q))
         {
             mBuildQ1.push_back(drawablep);
