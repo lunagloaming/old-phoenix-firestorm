@@ -181,6 +181,7 @@ set(viewer_SOURCE_FILES
     fsradarentry.cpp
     fsradarlistctrl.cpp
     fsradarmenu.cpp
+    fsrebuildtrace.cpp # <FS:Luna Witch/>
     fsregioncross.cpp
     fsscriptlibrary.cpp
     fsscrolllistctrl.cpp
@@ -1050,6 +1051,7 @@ set(viewer_HEADER_FILES
     fsradarentry.h
     fsradarlistctrl.h
     fsradarmenu.h
+    fsrebuildtrace.h # <FS:Luna Witch/>
     fsregioncross.h
     fsscriptlibrary.h
     fsscrolllistctrl.h
