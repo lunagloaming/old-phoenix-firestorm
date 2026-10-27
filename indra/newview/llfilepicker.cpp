@@ -1818,8 +1818,6 @@ bool LLFilePicker::openFileDialog( int32_t filter, bool blocking, EType aType )
     else if( aType == eSaveFile )
         flType = Fl_Native_File_Chooser::BROWSE_SAVE_FILE;
 
-    Fl_Native_File_Chooser flDlg;
-
     std::string file_dialog_title;
     std::string file_dialog_filter;
 
@@ -2017,17 +2015,18 @@ bool LLFilePicker::openFileDialog( int32_t filter, bool blocking, EType aType )
         }
     }
 
+    // <FS:Luna Witch> Dialog stayed on screen after cancel/close: the chooser is destroyed only when
+    // this function returns, with no event loop left to process the unmap. Own it in a scope and pump events.
+    int res = -1;
+    {
+    Fl_Native_File_Chooser flDlg;
     flDlg.title(file_dialog_title.c_str());
     flDlg.type(flType);
-
     if (!file_dialog_filter.empty())
     {
         flDlg.filter(file_dialog_filter.c_str());
     }
-
-    int res = flDlg.show();
-    gViewerWindow->getWindow()->afterDialog();
-
+    res = flDlg.show();
     if( res == 0 )
     {
         int32_t count = flDlg.count();
@@ -2044,6 +2043,13 @@ bool LLFilePicker::openFileDialog( int32_t filter, bool blocking, EType aType )
     {
         LL_WARNS() << "FLTK failed: " <<  flDlg.errmsg() << LL_ENDL;
     }
+    }
+    for (int i = 0; i < 10; ++i)
+    {
+        Fl::wait(0.01);
+    }
+    gViewerWindow->getWindow()->afterDialog();
+    // </FS:Luna Witch>
 
     return mFiles.empty() ? false : true;
 }
