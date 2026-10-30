@@ -805,11 +805,8 @@ LLAppViewer::LLAppViewer()
 
     // <FS:ND> Init our custom directories, not from SecondLife
     // gDirUtilp->initAppDirs("SecondLife");
-#if ADDRESS_SIZE == 64
-    gDirUtilp->initAppDirs(APP_NAME + "_x64");
-#else
+    // Companion Viewer: no "_x64" suffix, so the user-data folder is ~/.companionviewer (Linux)
     gDirUtilp->initAppDirs(APP_NAME);
-#endif
     // </FS:ND>
 
     //
