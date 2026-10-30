@@ -86,8 +86,8 @@ plugins you have; if you cannot play a certain in-world movie then you are
 probably missing the appropriate GStreamer plugin on your system - you may
 be able to install it (see TROUBLESHOOTING).
 
-User data is stored in the hidden directory ~/.companionviewer_x64 by default; you may
-override this location with the COMPANIONVIEWER_X64_USER_DIR environment
+User data is stored in the hidden directory ~/.companionviewer by default; you may
+override this location with the COMPANIONVIEWER_USER_DIR environment
 variable if you wish.
 
 
@@ -101,7 +101,7 @@ variable if you wish.
 -=-=-=-=-=-=-=-=-=
 
 The client prints a lot of diagnostic information to the console it was
-run from.  Most of this is also replicated in ~/.companionviewer_x64/logs/CompanionViewer.log
+run from.  Most of this is also replicated in ~/.companionviewer/logs/CompanionViewer.log
 - this is helpful to read when troubleshooting, especially 'WARNING' and
 'ERROR' lines.
 

@@ -100,8 +100,10 @@ Details worth knowing:
     `PushButton_Disabled` image with a solid `LtGray` label.
 - **MOTD:** all sources are off via `FSData::MOTD_ENABLED = false` (`indra/newview/fsdata.h`).
 - **Avatar Welcome Pack:** no longer opens on first login; still reachable from the menu.
-- **`_x64`:** `LLAppViewer::getSecondLifeTitle()` returns just "Companion Viewer". Data and cache
-  folder names keep `_x64` so existing settings aren't orphaned.
+- **`_x64`:** `LLAppViewer::getSecondLifeTitle()` returns just "Companion Viewer". The user-data
+  folder is also unsuffixed (`~/.companionviewer` on Linux; override with `COMPANIONVIEWER_USER_DIR`).
+  Nothing migrates the old `_x64` folders. The OS cache folder name on macOS/Windows (`lldir.cpp`,
+  `lldir_mac.cpp`) still has `_x64`.
 
 ## Open items
 - **We need our own MOTD source** before turning `FSData::MOTD_ENABLED` back on. Don't point it
