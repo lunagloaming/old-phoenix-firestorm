@@ -5624,11 +5624,8 @@ void LLAppViewer::purgeCacheImmediate()
 
 std::string LLAppViewer::getSecondLifeTitle() const
 {
-#if ADDRESS_SIZE == 64
-    return LLTrans::getString( "APP_NAME" ) + "_x64";
-#else
+    // Companion Viewer: no "_x64" suffix in user-facing names; it's wrong on Apple Silicon and meaningless to users
     return LLTrans::getString("APP_NAME");
-#endif
 }
 
 std::string LLAppViewer::getWindowTitle() const

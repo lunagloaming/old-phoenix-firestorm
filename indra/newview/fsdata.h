@@ -77,6 +77,10 @@ public:
     static LLSD getSystemInfo();
     static void callbackReqInfo(const LLSD &notification, const LLSD &response);
 
+    // Companion Viewer: MOTD display is disabled until we have our own MOTD source
+    // (fsdata and the grid's login message would show Firestorm/LL text).
+    static constexpr bool MOTD_ENABLED = false;
+
     std::string getOpenSimMOTD() const { return mOpenSimMOTD; }
     void selectNextMOTD();
 
