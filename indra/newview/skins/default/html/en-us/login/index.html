@@ -33,6 +33,13 @@
     width: min(40vh, 60vw);
     height: auto;
   }
+  /* Companion Viewer: a slow, continuous animation keeps the page repainting, so it
+     reappears after a window resize (a static page stayed blank until reloaded). */
+  @keyframes breathe {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+  img, h1 { animation: breathe 6s ease-in-out infinite; }
   h1 {
     margin: 1.5vh 0 0;
     font-family: "Syncopate", sans-serif;
