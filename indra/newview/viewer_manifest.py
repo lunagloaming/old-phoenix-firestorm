@@ -89,8 +89,9 @@ class ViewerManifest(LLManifest,FSViewerManifest):
         # </FS:Ansariel>
 
         # <FS:Ansariel> Copy emoji characters to build output
-        with self.prefix(src=pkgdir, dst="skins/default"):
-            self.path("xui")
+        # Companion Viewer is English-only; skip the other languages' emoji names
+        with self.prefix(src=os.path.join(pkgdir, "xui"), dst="skins/default/xui"):
+            self.path("en")
         # </FS:Ansariel>
 
         if self.is_packaging_viewer():
