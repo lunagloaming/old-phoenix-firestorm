@@ -120,9 +120,20 @@ static bool show_bundled_login_page(LLMediaCtrl* web_browser)
         return true;
     }
 
-    if (web_browser->getCurrentNavUrl() != local_page)
+    // CEF needs a file:// URL; a bare path is treated as an unreachable web address
+    std::string path = local_page;
+    std::replace(path.begin(), path.end(), '\\', '/');
+    if (path.front() != '/')
     {
-        web_browser->navigateToLocalPage("login", "index.html");
+        path.insert(0, "/"); // Windows drive letter: file:///C:/...
+    }
+    static const std::string allowed =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~/:";
+    const std::string local_url = "file://" + LLURI::escape(path, allowed);
+
+    if (web_browser->getCurrentNavUrl() != local_url)
+    {
+        web_browser->navigateTo(local_url, HTTP_CONTENT_TEXT_HTML);
     }
     return true;
 }
