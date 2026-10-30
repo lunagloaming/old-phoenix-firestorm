@@ -395,15 +395,11 @@ fi
 
 CHANNEL_SIMPLE="$CHANNEL"
 if [ -z $CHANNEL ] ; then
-    if [ $TARGET_PLATFORM == "darwin" ] ; then
-        CHANNEL="private-`hostname -s` "
-    else
-        CHANNEL="private-`hostname`"
-    fi
+    CHANNEL="CompanionViewer"
 else
     CHANNEL=`echo $CHANNEL | sed -e "s/[^a-zA-Z0-9\-]*//g"` # strip out difficult characters from channel
+    CHANNEL="CompanionViewer-$CHANNEL"
 fi
-CHANNEL="CompanionViewer-$CHANNEL"
 
 if [ \( $WANTS_CLEAN -eq $TRUE \) -a \( $WANTS_BUILD -eq $FALSE \) ] ; then
     echo "Cleaning $TARGET_PLATFORM...."
