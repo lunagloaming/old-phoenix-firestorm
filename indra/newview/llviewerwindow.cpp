@@ -2554,14 +2554,7 @@ void LLViewerWindow::initWorldUI()
             // </FS:TJ>
             LLFloaterReg::getInstance("marketplace");
         }
-        // <FS:Ansariel> OpenSim support
-        //else if (gSavedSettings.getBOOL("FirstLoginThisInstall"))
-        else if (LLGridManager::instance().isInSecondLife() && gSavedSettings.getBOOL("FirstLoginThisInstall"))
-        // </FS:Ansariel>
-        {
-            // Preload the welcome pack for first-time login even on low end hardware
-            LLFloaterReg::getInstance("avatar_welcome_pack");
-        }
+        // Companion Viewer: no first-run Avatar Welcome Pack, so no low-memory preload for it
     }
 
     // <FS:Zi> Autohide main chat bar if applicable
