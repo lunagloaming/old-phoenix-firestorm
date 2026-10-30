@@ -1,6 +1,6 @@
 /* Localized versions of Info.plist keys */
 
-CFBundleName = "Firestorm";
+CFBundleName = "Companion Viewer";
 
-CFBundleShortVersionString = "Firestorm version %%VERSION%%";
-CFBundleGetInfoString = "Firestorm version %%VERSION%%, Copyright 2010-2026 The Phoenix Firestorm Project, Inc.";
+CFBundleShortVersionString = "Companion Viewer version %%VERSION%%";
+CFBundleGetInfoString = "Companion Viewer version %%VERSION%%. Based on Firestorm, Copyright 2010-2026 The Phoenix Firestorm Project, Inc.";

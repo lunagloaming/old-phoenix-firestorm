@@ -58,8 +58,8 @@
      name="Help">
         <menu_item_call
          label="Firestorm Wiki"
-         name="Firestorm Wiki"
-         shortcut="F1">
+         visible="false"
+         name="Firestorm Wiki">
             <menu_item_call.on_click
              function="PromptShowURL"
              name="script_library_url"
@@ -67,6 +67,7 @@
        </menu_item_call>
        <menu_item_call
         label="Troubleshooting"
+        visible="false"
         name="Troubleshooting">
            <menu_item_call.on_click
             function="PromptShowURL"
@@ -75,6 +76,7 @@
        </menu_item_call>
         <menu_item_call
          label="Guidebook"
+         visible="false"
          name="How To">
             <menu_item_call.on_click
              function="Help.ToggleHowTo"
@@ -129,6 +131,7 @@
         </menu_item_call>
         <menu_item_call
              label="Report Problem"
+             visible="false"
              name="Report Bug">
                 <menu_item_call.on_click
                  function="Advanced.ReportBug"/>
