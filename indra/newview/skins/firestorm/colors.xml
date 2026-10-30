@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <colors>
 
-	<!--  Colors in this scheme  -->
-	<!-- 
-   var. 1 = #8F5B3F = rgb(143,91,63) 0.56 0.36 0.25
-   var. 2 = #7D5540 = rgb(125,85,64) 0.49 0.33 0.25
-   var. 3 = #764227 = rgb(118,66,39)  0.46 .26 0.15
-   var. 4 = #A96641 = rgb(169,102,65) 0.66 0.40 0.25
-   var. 5 = #AB7B61 = rgb(171,123,97) 0.76 0.58 0.49
-
+	<!--  Colors in this scheme: Companion Viewer ocean blue  -->
+	<!--
+   EmphasisColor   = #5CB8F2 accent text/links, ~6.5:1 on the dark panels
+   EmphasisBgColor = #1F6BAD selection/button fill, ~5.5:1 behind white text
+   SchemeLightest  = #9CC8E8
+   SchemeDark      = #2E5578
 	-->
 	<color
 	 name="ltgrey123"
@@ -27,22 +25,25 @@
 	 value="0.75 0.92 0.49 1.0" />
 	<color
 	 name="EmphasisColor"             
-	 value="0.56 0.36 0.25 1.0" />
+	 value="0.36 0.72 0.95 1.0" />
+	<color
+	 name="EmphasisBgColor"
+	 value="0.12 0.42 0.68 1.0" />
 	<color
 	 name="SchemeLightest"
-	 value="0.76 0.58 0.49 1.0" />
+	 value="0.61 0.78 0.91 1.0" />
 	<color
 	 name="SchemeLightest_35"
-	 value="0.76 0.58 0.49 0.35" />
+	 value="0.61 0.78 0.91 0.35" />
 	<color 
 	 name="SchemeDark"
-	 value="0.49 0.33 0.25 1.0" />
+	 value="0.18 0.33 0.47 1.0" />
 	<color
 	 name="EmphasisColor_13"
-	 value="0.950 0.412 0.173 0.13" />
+	 value="0.20 0.60 0.95 0.13" />
 	<color
 	 name="EmphasisColor_35"
-	 value="0.950 0.412 0.173 0.35" />
+	 value="0.20 0.60 0.95 0.35" />
 	<color
 	 name="White"
 	 value="1 1 1 1" />
@@ -368,10 +369,10 @@
      reference="Unused?" />
     <color
      name="ButtonCautionImageColor"
-     reference="EmphasisColor" />
+     reference="EmphasisBgColor" />
     <color
      name="ButtonColor"
-     reference="EmphasisColor" />
+     reference="EmphasisBgColor" />
     <color
      name="ButtonFlashBgColor"
      reference="White" />
@@ -444,13 +445,13 @@
      reference="EmphasisColor" />
     <color
      name="lineeditor_highlight"
-     reference="EmphasisColor" />
+     reference="EmphasisBgColor" />
     <color
      name="lineeditor_preedit_bg"
      reference="White" />
     <color
      name="simpleeditor_bg_selected"
-     reference="EmphasisColor" />
+     reference="EmphasisBgColor" />
     <color
      name="floater_bg_color"
      reference="drkgrey123"/>
@@ -891,5 +892,5 @@
      reference="TextCursorColor" />
   <color
     name="HighlightPanelBackground"
-    reference="EmphasisColor" />
+    reference="EmphasisBgColor" />
 </colors>
