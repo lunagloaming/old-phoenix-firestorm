@@ -193,7 +193,7 @@ No tutorial is currently available.
    icon="alertmodal.tga"
    name="BadInstallation"
    type="alertmodal">
- Installation of [APP_NAME] is defective. Please [https://www.firestormviewer.org/downloads download a new copy] of the Viewer and reinstall.
+ Installation of [APP_NAME] is defective. Please download a new copy of the Viewer and reinstall.
     <tag>fail</tag>
     <usetemplate
      name="okbutton"
@@ -1992,7 +1992,7 @@ Visit [_URL] for more information?
     <tag>confirm</tag>
     <url option="0" name="url">
 
-			https://wiki.firestormviewer.org/fs_system_requirements
+			https://secondlife.com/system-requirements/
     </url>
     <usetemplate
      ignoretext="My computer hardware is not supported"
@@ -4124,7 +4124,7 @@ We&apos;re having trouble connecting. There may be a problem with your Internet 
 You can either check your Internet connection and try again in a few minutes, click Help to view the [SUPPORT_SITE], or click Teleport to attempt to teleport home.
     <url option="1" name="url">
 
-			https://www.firestormviewer.org/support/
+			https://support.secondlife.com/
     </url>
     <form name="form">
       <button
@@ -4152,7 +4152,7 @@ We&apos;re having trouble connecting. There may be a problem with your Internet 
 
 You can either check your Internet connection and try again in a few minutes or click Help to view the [SUPPORT_SITE].
     <url option="1" name="url">
-			https://www.firestormviewer.org/support/
+			https://support.secondlife.com/
     </url>
     <form name="form">
       <button
@@ -10128,7 +10128,7 @@ Select residents to share with.
     icon="alert.tga"
     type="alert">
       [LABEL] failed to upload: [MESSAGE]
-[DETAILS] See Firestorm.log for details
+[DETAILS] See CompanionViewer.log for details
   </notification>
 
   <notification
@@ -10137,7 +10137,7 @@ Select residents to share with.
     type="alert">
       [LABEL] failed to upload: [MESSAGE]
 
-See Firestorm.log for details
+See CompanionViewer.log for details
   </notification>
    
   <notification
@@ -10338,7 +10338,6 @@ Please check your network and firewall setup.
 Disable any SIP ALG feature in your router.
 
 Voice communications will not be available.
-https://wiki.firestormviewer.org/fs_voice
     <tag>voice</tag>
   <tag>fail</tag>
     <usetemplate
@@ -10355,7 +10354,6 @@ We're having trouble connecting to your voice server.
 
 Voice communications will not be available.
 Please check your network and firewall setup.
-[https://wiki.firestormviewer.org/fs_voice]
     <tag>voice</tag>
   <tag>fail</tag>
     <usetemplate
@@ -14503,8 +14501,8 @@ This setting is intended for cases where VRAM detection is reporting incorrect v
    name="CurrencyURIOverrideReceived"
    type="alertmodal">
 This region has elected to specify a third-party currency portal. 
-Please note that currency purchases made through Firestorm Viewer are transactions between you (the user) and the provider(s) or seller(s) of the currency. 
-Neither Firestorm Viewer, the Phoenix Firestorm Viewer Project Inc., nor its team shall be liable for any cost or damage arising either directly or indirectly from any such transaction. 
+Please note that currency purchases made through Companion Viewer are transactions between you (the user) and the provider(s) or seller(s) of the currency. 
+Neither Companion Viewer, the Phoenix Firestorm Viewer Project Inc., nor its team shall be liable for any cost or damage arising either directly or indirectly from any such transaction. 
 If you do not agree to these terms of use, then no financial transactions should be conducted using this viewer.
    <usetemplate
     ignoretext="When the region sets a new currency helper."
@@ -15034,9 +15032,9 @@ Bulk import of Windlights has finished.
    <unique combine = "cancel_old">
      <context>FSAOScriptedNotification</context>
    </unique>
-Firestorm Animation Overrider: [AO_MESSAGE]
+Companion Viewer Animation Overrider: [AO_MESSAGE]
    <usetemplate
-    ignoretext="Warn me when the Firestorm Animation Overrider gets accessed by a scripted object"
+    ignoretext="Warn me when the Companion Viewer Animation Overrider gets accessed by a scripted object"
     name="notifyignore"/>
   </notification>
   <notification
@@ -15105,10 +15103,6 @@ Camera reset might be inhibited by the following objects:
 To improve [APP_NAME]'s performance, please whitelist it.
 
 Some antivirus programs may mistakenly block parts of [APP_NAME], slowing down its performance and causing some features to malfunction. To prevent these issues, we strongly recommend adding [APP_NAME] to your antivirus program's whitelist (or exclusion list). This will ensure the viewer runs smoothly.
-
-For detailed instructions on how to whitelist [APP_NAME] - including a list of files and folders to exclude - please visit our guide:
-
-https://wiki.firestormviewer.org/antivirus_whitelisting
   </notification>
 
   <!-- <FS:TJ> Detect and notify if the viewer is trying to run as admin on Windows -->
@@ -15118,9 +15112,7 @@ https://wiki.firestormviewer.org/antivirus_whitelisting
     type="alertmodal">
 One or more viewer processes are currently running as administrator. This is known to cause a number of issues and prevent media and web pages working within the viewer.
 
-Please ensure that all viewer processes are not set to run as administrator. For more information, please read here:
-
-https://wiki.firestormviewer.org/fs_media#one_or_more_viewer_processes_are_currently_running_as_administrator_error_message
+Please ensure that all viewer processes are not set to run as administrator.
     <tag>fail</tag>
     <usetemplate
      ignoretext="Warn me when the viewer is running as administrator"

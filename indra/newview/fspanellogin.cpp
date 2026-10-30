@@ -93,6 +93,40 @@ std::string FSPanelLogin::sPendingNewGridURI{};
 // For new accounts without a last name "Resident" is added as a last name.
 static std::string canonicalize_username(const std::string& name);
 
+// Companion Viewer: grids that use Firestorm's hosted splash page get the bundled
+// skins/*/html/en-us/login/index.html instead. Explicit LoginPage/ForceLoginURL
+// overrides and grids with their own login page are left alone.
+static bool show_bundled_login_page(LLMediaCtrl* web_browser)
+{
+    if (!gSavedSettings.getString("ForceLoginURL").empty())
+    {
+        return false;
+    }
+
+    const std::string login_page = LLGridManager::getInstance()->getLoginPage();
+    const std::string authority = LLURI(login_page).authority();
+    if (!login_page.empty() &&
+        authority.find("phoenixviewer.com") == std::string::npos &&
+        authority.find("firestormviewer.org") == std::string::npos)
+    {
+        return false;
+    }
+
+    const std::string local_page = gDirUtilp->findSkinnedFilename("html", gDirUtilp->add("login", "index.html"));
+    if (local_page.empty())
+    {
+        LL_WARNS("AppInit") << "Bundled login page not found" << LL_ENDL;
+        web_browser->navigateTo("about:blank", HTTP_CONTENT_TEXT_HTML);
+        return true;
+    }
+
+    if (web_browser->getCurrentNavUrl() != local_page)
+    {
+        web_browser->navigateToLocalPage("login", "index.html");
+    }
+    return true;
+}
+
 class LLLoginLocationAutoHandler : public LLCommandHandler
 {
 public:
@@ -489,9 +523,12 @@ void FSPanelLogin::showLoginWidgets()
         sInstance->getChildView("login_widgets")->setVisible( true);
         LLMediaCtrl* web_browser = sInstance->getChild<LLMediaCtrl>("login_html");
 
-        // *TODO: Append all the usual login parameters, like first_login=Y etc.
-        std::string splash_screen_url = LLGridManager::getInstance()->getLoginPage();
-        web_browser->navigateTo( splash_screen_url, HTTP_CONTENT_TEXT_HTML );
+        if (!show_bundled_login_page(web_browser))
+        {
+            // *TODO: Append all the usual login parameters, like first_login=Y etc.
+            std::string splash_screen_url = LLGridManager::getInstance()->getLoginPage();
+            web_browser->navigateTo( splash_screen_url, HTTP_CONTENT_TEXT_HTML );
+        }
         LLUICtrl* username_combo = sInstance->getChild<LLUICtrl>("username_combo");
         username_combo->setFocus(true);
     }
@@ -887,6 +924,11 @@ void FSPanelLogin::setAlwaysRefresh(bool refresh)
 void FSPanelLogin::loadLoginPage()
 {
     if (!sInstance) return;
+
+    if (show_bundled_login_page(sInstance->getChild<LLMediaCtrl>("login_html")))
+    {
+        return;
+    }
 
     LLURI login_page = LLURI(LLGridManager::getInstance()->getLoginPage());
     LLSD params(login_page.queryMap());

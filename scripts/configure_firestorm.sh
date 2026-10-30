@@ -69,7 +69,7 @@ showUsage()
     echo
     echo "  --clean                  : Remove past builds & configuration"
     echo "  --config                 : Generate a new architecture-specific config"
-    echo "  --build                  : Build Firestorm"
+    echo "  --build                  : Build Companion Viewer"
     echo "  --run-tests              : Enable tests when configuring; run them after building"
     echo "  --version                : Update version number"
     echo "  --chan  [Release|Beta|Private]   : Private is the default, sets channel"
@@ -403,7 +403,7 @@ if [ -z $CHANNEL ] ; then
 else
     CHANNEL=`echo $CHANNEL | sed -e "s/[^a-zA-Z0-9\-]*//g"` # strip out difficult characters from channel
 fi
-CHANNEL="Firestorm-$CHANNEL"
+CHANNEL="CompanionViewer-$CHANNEL"
 
 if [ \( $WANTS_CLEAN -eq $TRUE \) -a \( $WANTS_BUILD -eq $FALSE \) ] ; then
     echo "Cleaning $TARGET_PLATFORM...."
@@ -636,7 +636,7 @@ if [ $WANTS_BUILD -eq $TRUE ] ; then
         else
             JOBS="-jobs $JOBS"
         fi
-        xcodebuild -configuration $BTYPE -project Firestorm.xcodeproj $JOBS 2>&1 | tee -a "$LOG"
+        xcodebuild -configuration $BTYPE -project CompanionViewer.xcodeproj $JOBS 2>&1 | tee -a "$LOG"
         build_status=${PIPESTATUS[0]}
     elif [ $TARGET_PLATFORM == "linux" ] ; then
         if [ $JOBS == "0" ] ; then
@@ -652,16 +652,16 @@ if [ $WANTS_BUILD -eq $TRUE ] ; then
         fi
     elif [ $TARGET_PLATFORM == "windows" ] ; then
         # VS2026+ now uses .slnx so determine which one exists
-        if [ -f "Firestorm.slnx" ]; then
-          SOLUTION="Firestorm.slnx"
-        elif [ -f "Firestorm.sln" ]; then
-          SOLUTION="Firestorm.sln"
+        if [ -f "CompanionViewer.slnx" ]; then
+          SOLUTION="CompanionViewer.slnx"
+        elif [ -f "CompanionViewer.sln" ]; then
+          SOLUTION="CompanionViewer.sln"
         else
-          echo "Build failed! No Firestorm.slnx or Firestorm.sln found"
+          echo "Build failed! No CompanionViewer.slnx or CompanionViewer.sln found"
           exit 1
         fi
-        msbuild.exe "$SOLUTION" -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
-            -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
+        msbuild.exe "$SOLUTION" -p:Configuration=${BTYPE} -flp:LogFile="logs\\CompanionViewerBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
+            -flp1:"errorsonly;LogFile=logs\\CompanionViewerBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
             -verbosity:normal -toolsversion:Current -p:"VCBuildAdditionalOptions= /incremental"
         build_status=$?
     fi

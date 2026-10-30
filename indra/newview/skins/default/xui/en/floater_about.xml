@@ -33,7 +33,7 @@
         top="16"
         width="434"
         wrap="true">
-For the latest information about Firestorm, visit 
+Companion Viewer is based on Firestorm:
 https://www.firestormviewer.org
       </text>
       <text_editor
@@ -71,7 +71,7 @@ https://www.firestormviewer.org
         top="16"
         width="489"
         wrap="true">
-Firestorm would not be possible without the decision from Linden Lab to make their Second Life viewer source code available.
+Companion Viewer and Firestorm would not be possible without the decision from Linden Lab to make their Second Life viewer source code available.
 
 Second Life is brought to you by the Lindens, 
 with open source contributions from:

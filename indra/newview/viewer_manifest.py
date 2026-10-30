@@ -966,20 +966,8 @@ class Windows_x86_64_Manifest(ViewerManifest):
         return result
         # </FS:Ansariel>
     def dl_url_from_channel(self):
-        if self.channel_type() == 'release':
-            return 'https://www.firestormviewer.org/choose-your-platform'
-        elif self.channel_type() == 'beta':
-            return 'https://www.firestormviewer.org/early-access-beta-downloads'
-        elif self.channel_type() == 'alpha':
-            return 'https://www.firestormviewer.org/early-access-alpha-downloads'
-        elif self.channel_type() == 'manual':
-            return 'https://www.firestormviewer.org/early-access-manual-downloads'
-        elif self.channel_type() == 'profiling':
-            return 'https://www.firestormviewer.org/profiling-downloads'
-        elif self.channel_type() == 'nightly':
-            return 'https://www.firestormviewer.org/firestorm-nightly-build-downloads'
-        else:
-            return '<NO-URL>'
+        # Companion Viewer has no download site; the installer no longer links to one
+        return '<NO-URL>'
         
 
     def package_finish(self):
@@ -1479,7 +1467,7 @@ class Darwin_x86_64_Manifest(ViewerManifest):
         # copy over the build result (this is a no-op if run within the xcode
         # script)
         #self.path(os.path.join(self.args['configuration'], self.channel() + ".app"), dst="")
-        self.path(os.path.join(self.args['configuration'], "Firestorm.app"), dst="")
+        self.path(os.path.join(self.args['configuration'], "CompanionViewer.app"), dst="")
 
         pkgdir = os.path.join(self.args['build'], os.pardir, 'packages')
         relpkgdir = os.path.join(pkgdir, "lib", "release")
@@ -1491,7 +1479,7 @@ class Darwin_x86_64_Manifest(ViewerManifest):
 
         with self.prefix(src="", dst="Contents"):  # everything goes in Contents
             with self.prefix(dst="MacOS"):
-                executable = self.dst_path_of("Firestorm") # locate the executable within the bundle.
+                executable = self.dst_path_of("CompanionViewer") # locate the executable within the bundle.
 
             bugsplat_db = self.args.get('bugsplat')
             print(f"debug: bugsplat_db={bugsplat_db}")
@@ -1622,21 +1610,6 @@ class Darwin_x86_64_Manifest(ViewerManifest):
                                 dst="English.lproj/InfoPlist.strings",
                                 searchdict={'%%VERSION%%':'.'.join(self.args['version'])}
                                 )
-                self.path("German.lproj")
-                self.path("Japanese.lproj")
-                self.path("Korean.lproj")
-                self.path("da.lproj")
-                self.path("es.lproj")
-                self.path("fr.lproj")
-                self.path("hu.lproj")
-                self.path("it.lproj")
-                self.path("nl.lproj")
-                self.path("pl.lproj")
-                self.path("pt.lproj")
-                self.path("ru.lproj")
-                self.path("tr.lproj")
-                self.path("uk.lproj")
-                self.path("zh-Hans.lproj")
 
                 def path_optional(src, dst):
                     """
@@ -1765,7 +1738,7 @@ class Darwin_x86_64_Manifest(ViewerManifest):
         if ("package" in self.args['actions'] or 
             "unpacked" in self.args['actions']):
             self.run_command_shell('strip -S %(viewer_binary)r' %
-                            { 'viewer_binary' : self.dst_path_of('Contents/MacOS/Firestorm')})
+                            { 'viewer_binary' : self.dst_path_of('Contents/MacOS/CompanionViewer')})
 # </FS:Ansariel> construct method VMP trampoline crazy VMP launcher juggling shamelessly replaced with old version
 
     def package_finish(self):
@@ -2153,10 +2126,10 @@ class LinuxManifest(ViewerManifest):
             self.path("VivoxAUP.txt")
         # </FS:TJ>
         self.path("LGPL-license.txt")
-        self.path("res/firestorm_icon.png","firestorm_icon.png")
+        self.path("res/firestorm_icon.png","companionviewer_icon.png")
         with self.prefix("linux_tools"):
-            self.path("FIRESTORM_DESKTOPINSTALL.txt","FIRESTORM_DESKTOPINSTALL.txt")
-            self.path("wrapper.sh","firestorm")
+            self.path("FIRESTORM_DESKTOPINSTALL.txt","DESKTOPINSTALL.txt")
+            self.path("wrapper.sh","companionviewer")
             with self.prefix(dst="etc"):
                 self.path("handle_secondlifeprotocol.sh")
                 self.path("register_secondlifeprotocol.sh")
@@ -2165,7 +2138,7 @@ class LinuxManifest(ViewerManifest):
 
         with self.prefix(dst="bin"):
             self.path( os.path.join(os.pardir,'build_data.json'), "build_data.json" )
-            self.path("firestorm-bin","do-not-directly-run-firestorm-bin")
+            self.path("firestorm-bin","do-not-directly-run-companionviewer-bin")
             # <FS:Beq> Package the independent crash reporter at the path the viewer launches.
             self.path("../linux_crash_logger/linux-crash-logger", "linux-crash-logger.bin")
             # </FS:Beq>

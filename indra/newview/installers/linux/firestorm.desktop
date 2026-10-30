@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Firestorm
-Exec=firestorm
+Name=Companion Viewer
+Exec=companionviewer
 Comment=Client for virtual worlds
-Icon=firestorm_icon
+Icon=companionviewer_icon
 Categories=Development;
 Terminal=true

@@ -54,30 +54,30 @@ Unicode true                # Enable unicode support
 
 # Danish and Polish no longer supported by the viewer itself
 ##!include "%%SOURCE%%\installers\windows\lang_da.nsi"
-!include "%%SOURCE%%\installers\windows\lang_de.nsi"
-!include "%%SOURCE%%\installers\windows\lang_es.nsi"
-!include "%%SOURCE%%\installers\windows\lang_fr.nsi"
-!include "%%SOURCE%%\installers\windows\lang_ja.nsi"
-!include "%%SOURCE%%\installers\windows\lang_it.nsi"
-!include "%%SOURCE%%\installers\windows\lang_pl.nsi" ;<FS:Ansariel> Polish is supported
-!include "%%SOURCE%%\installers\windows\lang_pt-br.nsi"
-!include "%%SOURCE%%\installers\windows\lang_ru.nsi"
+##!include "%%SOURCE%%\installers\windows\lang_de.nsi"
+##!include "%%SOURCE%%\installers\windows\lang_es.nsi"
+##!include "%%SOURCE%%\installers\windows\lang_fr.nsi"
+##!include "%%SOURCE%%\installers\windows\lang_ja.nsi"
+##!include "%%SOURCE%%\installers\windows\lang_it.nsi"
+##!include "%%SOURCE%%\installers\windows\lang_pl.nsi" ;<FS:Ansariel> Polish is supported
+##!include "%%SOURCE%%\installers\windows\lang_pt-br.nsi"
+##!include "%%SOURCE%%\installers\windows\lang_ru.nsi"
 ##!include "%%SOURCE%%\installers\windows\lang_tr.nsi"
-!include "%%SOURCE%%\installers\windows\lang_zh.nsi"
+##!include "%%SOURCE%%\installers\windows\lang_zh.nsi"
 
 # *TODO: Move these into the language files themselves
 ##LangString LanguageCode ${LANG_DANISH}   "da"
-LangString LanguageCode ${LANG_GERMAN}   "de"
+##LangString LanguageCode ${LANG_GERMAN}   "de"
 LangString LanguageCode ${LANG_ENGLISH}  "en"
-LangString LanguageCode ${LANG_SPANISH}  "es"
-LangString LanguageCode ${LANG_FRENCH}   "fr"
-LangString LanguageCode ${LANG_JAPANESE} "ja"
-LangString LanguageCode ${LANG_ITALIAN}  "it"
-LangString LanguageCode ${LANG_POLISH}   "pl"
-LangString LanguageCode ${LANG_PORTUGUESEBR} "pt"
-LangString LanguageCode ${LANG_RUSSIAN}  "ru"
+##LangString LanguageCode ${LANG_SPANISH}  "es"
+##LangString LanguageCode ${LANG_FRENCH}   "fr"
+##LangString LanguageCode ${LANG_JAPANESE} "ja"
+##LangString LanguageCode ${LANG_ITALIAN}  "it"
+##LangString LanguageCode ${LANG_POLISH}   "pl"
+##LangString LanguageCode ${LANG_PORTUGUESEBR} "pt"
+##LangString LanguageCode ${LANG_RUSSIAN}  "ru"
 ##LangString LanguageCode ${LANG_TURKISH}  "tr"
-LangString LanguageCode ${LANG_TRADCHINESE}  "zh"
+##LangString LanguageCode ${LANG_TRADCHINESE}  "zh"
 
 # This placeholder is replaced by viewer_manifest.py
 %%INST_VARS%%
@@ -105,7 +105,7 @@ SetOverwrite on							# Overwrite files by default
 #AutoCloseWindow true					# After all files install, close window
 
 # Registry key paths, ours and Microsoft's
-!define LINDEN_KEY      "SOFTWARE\The Phoenix Firestorm Project"
+!define LINDEN_KEY      "SOFTWARE\Companion Viewer"
 !define INSTNAME_KEY    "${LINDEN_KEY}\${INSTNAME}"
 !define MSCURRVER_KEY   "SOFTWARE\Microsoft\Windows\CurrentVersion"
 !define MSNTCURRVER_KEY "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
@@ -310,9 +310,7 @@ Function CheckCPUFlagsAVX2
     System::Call 'kernel32::IsProcessorFeaturePresent(i 40) i .r1'  ; 40 is PF_AVX2_INSTRUCTIONS_AVAILABLE
     IntCmp $1 1 OK_AVX2
     ; AVX2 not supported
-    ; Replace %DLURL% in the language string with the URL
-    ${WordReplace} "$(MissingAVX2)" "%DLURL%" "${DL_URL}-legacy-cpus" "+*" $3
-    MessageBox MB_OK "$3"
+    MessageBox MB_OK "$(MissingAVX2)"
     
     MessageBox MB_YESNO $(AVX2OverrideConfirmation) IDNO NoInstall
     MessageBox MB_OKCANCEL $(AVX2OverrideNote) IDCANCEL NoInstall
@@ -324,7 +322,6 @@ Function CheckCPUFlagsAVX2
     Return
 
   NoInstall:
-    ${OpenURL} "${DL_URL}-legacy-cpus"
     Quit
 
   OK_AVX2:
@@ -332,27 +329,6 @@ Function CheckCPUFlagsAVX2
     Pop $2
     Pop $1
     Return
-FunctionEnd
-
-Function CheckCPUFlagsAVX2_Prompt
-    Push $1
-    Push $3
-    System::Call 'kernel32::IsProcessorFeaturePresent(i 40) i .r1'  ; 40 is PF_AVX2_INSTRUCTIONS_AVAILABLE
-    IntCmp $1 1 OK_AVX2 
-    Pop $1
-    Return
-  OK_AVX2:
-    ; Replace %DLURL% in the language string with the URL
-    ${WordReplace} "$(AVX2Available)" "%DLURL%" "${DL_URL}" "+*" $3
-
-    MessageBox MB_YESNO $3 IDYES DownloadAVX2 IDNO ContinueInstall
-    DownloadAVX2:
-      ${OpenURL} '${DL_URL}'
-      Quit
-    ContinueInstall:
-      Pop $3
-      Pop $1
-      Return
 FunctionEnd
 
 # <FS:Ansariel> Optional start menu entry
@@ -416,12 +392,10 @@ after_instdir:
 Call CheckCPUFlags							# Make sure we have SSE2 support
 
 # Two checks here, if we are an AVX2 build we want to abort if no AVX2 support on this CPU.
-# If we are not an AVX2 build but the CPU can support it then we want to prompt them to download the AVX2 version
+# Companion Viewer: no prompt to download an AVX2 build
 # but also allow them to override.
 ${If} ${ISAVX2} == 1
   Call CheckCPUFlagsAVX2
-${Else}
-  Call CheckCPUFlagsAVX2_Prompt
 ${EndIf}
 
 Call CheckWindowsVersion					# Don't install On unsupported systems
@@ -626,7 +600,7 @@ CreateShortCut	"$SMPROGRAMS\$INSTSHORTCUT\$INSTSHORTCUT.lnk" \
 
 WriteINIStr		"$SMPROGRAMS\$INSTSHORTCUT\SL Create Account.url" \
 				"InternetShortcut" "URL" \
-				"https://www.firestormviewer.org/join-secondlife/"
+				"https://join.secondlife.com/"
 WriteINIStr		"$SMPROGRAMS\$INSTSHORTCUT\SL Your Account.url" \
 				"InternetShortcut" "URL" \
 				"https://www.secondlife.com/account/"
@@ -668,10 +642,7 @@ WriteRegStr SHELL_CONTEXT "${INSTNAME_KEY}" "" "$INSTDIR"
 WriteRegStr SHELL_CONTEXT "${INSTNAME_KEY}" "Version" "${VERSION_LONG}"
 WriteRegStr SHELL_CONTEXT "${INSTNAME_KEY}" "Shortcut" "$INSTSHORTCUT"
 WriteRegStr SHELL_CONTEXT "${INSTNAME_KEY}" "Exe" "$VIEWER_EXE"
-WriteRegStr SHELL_CONTEXT "${MSUNINSTALL_KEY}" "Publisher" "The Phoenix Firestorm Project, Inc."
-WriteRegStr SHELL_CONTEXT "${MSUNINSTALL_KEY}" "URLInfoAbout" "https://www.firestormviewer.org"
-WriteRegStr SHELL_CONTEXT "${MSUNINSTALL_KEY}" "URLUpdateInfo" "https://www.firestormviewer.org/downloads"
-WriteRegStr SHELL_CONTEXT "${MSUNINSTALL_KEY}" "HelpLink" "https://www.firestormviewer.org/support"
+WriteRegStr SHELL_CONTEXT "${MSUNINSTALL_KEY}" "Publisher" "Companion Viewer"
 WriteRegStr SHELL_CONTEXT "${MSUNINSTALL_KEY}" "DisplayName" "$INSTNAME"
 WriteRegStr SHELL_CONTEXT "${MSUNINSTALL_KEY}" "UninstallString" '"$INSTDIR\uninst.exe"'
 WriteRegStr SHELL_CONTEXT "${MSUNINSTALL_KEY}" "DisplayVersion" "${VERSION_LONG}"
@@ -1015,28 +986,28 @@ Push $2
 # Required since ProfileImagePath is of type REG_EXPAND_SZ
     ExpandEnvStrings $2 $2
 
-# Delete files in \Users\<User>\AppData\Roaming\Firestorm
+# Delete files in \Users\<User>\AppData\Roaming\CompanionViewer_x64
 # Remove all settings files but leave any other .txt files to preserve the chat logs
-    RMDir /r "$2\AppData\Roaming\Firestorm\logs"
-    RMDir /r "$2\AppData\Roaming\Firestorm\browser_profile"
-    RMDir /r "$2\AppData\Roaming\Firestorm\user_settings"
-    Delete  "$2\AppData\Roaming\Firestorm\*.xml"
-    Delete  "$2\AppData\Roaming\Firestorm\*.bmp"
-    Delete  "$2\AppData\Roaming\Firestorm\search_history.txt"
-    Delete  "$2\AppData\Roaming\Firestorm\plugin_cookies.txt"
-    Delete  "$2\AppData\Roaming\Firestorm\typed_locations.txt"
-# Delete files in \Users\<User>\AppData\Local\Firestorm
+    RMDir /r "$2\AppData\Roaming\CompanionViewer_x64\logs"
+    RMDir /r "$2\AppData\Roaming\CompanionViewer_x64\browser_profile"
+    RMDir /r "$2\AppData\Roaming\CompanionViewer_x64\user_settings"
+    Delete  "$2\AppData\Roaming\CompanionViewer_x64\*.xml"
+    Delete  "$2\AppData\Roaming\CompanionViewer_x64\*.bmp"
+    Delete  "$2\AppData\Roaming\CompanionViewer_x64\search_history.txt"
+    Delete  "$2\AppData\Roaming\CompanionViewer_x64\plugin_cookies.txt"
+    Delete  "$2\AppData\Roaming\CompanionViewer_x64\typed_locations.txt"
+# Delete files in \Users\<User>\AppData\Local\CompanionViewer
     ${If} ${ISOPENSIM} == "0"
         ${If} ${IS64BIT} == "0"
-            RMDir /r "$2\AppData\Local\Firestorm"				#Delete the Havok cache folder
+            RMDir /r "$2\AppData\Local\CompanionViewer"				#Delete the Havok cache folder
         ${Else}
-            RMDir /r "$2\AppData\Local\Firestorm_x64"			#Delete the OpenSim cache folder
+            RMDir /r "$2\AppData\Local\CompanionViewer_x64"			#Delete the OpenSim cache folder
         ${EndIf}
     ${Else}
         ${If} ${IS64BIT} == "0"
-            RMDir /r "$2\AppData\Local\FirestormOS"			#Delete the Havok cache folder
+            RMDir /r "$2\AppData\Local\CompanionViewerOS"			#Delete the Havok cache folder
         ${Else}
-            RMDir /r "$2\AppData\Local\FirestormOS_x64"		#Delete the OpenSim cache folder
+            RMDir /r "$2\AppData\Local\CompanionViewerOS_x64"		#Delete the OpenSim cache folder
         ${EndIf}
     ${EndIf}
 
@@ -1049,11 +1020,11 @@ Pop $2
 Pop $1
 Pop $0
 
-# Delete files in ProgramData\Firestorm
+# Delete files in ProgramData\CompanionViewer
 Push $0
   ReadRegStr $0 SHELL_CONTEXT "${MSCURRVER_KEY}\Explorer\Shell Folders" "Common AppData"
   StrCmp $0 "" +2
-  RMDir /r "$0\Firestorm"
+  RMDir /r "$0\CompanionViewer"
 Pop $0
 
 Keep:
