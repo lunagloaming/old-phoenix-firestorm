@@ -2612,9 +2612,10 @@
              name="community_pages_url"
              parameter="WebLaunchExternalTarget,https://community.secondlife.com" />
        </menu_item_call>
-       <menu_item_separator/>
+       <menu_item_separator visible="false"/>
     	<menu_item_call
              label="Firestorm Blog"
+             visible="false"
              name="Firestorm Blog">
              <menu_item_call.on_click
              function="PromptShowURL"
@@ -2623,6 +2624,7 @@
        </menu_item_call>
     	<menu_item_call
              label="Firestorm Primfeed"
+             visible="false"
              name="Firestorm Primfeed">
              <menu_item_call.on_click
              function="PromptShowURL"
@@ -2631,6 +2633,7 @@
        </menu_item_call>
     	<menu_item_call
              label="Firestorm Flickr"
+             visible="false"
              name="Firestorm Flickr">
              <menu_item_call.on_click
              function="PromptShowURL"
@@ -2639,6 +2642,7 @@
        </menu_item_call>
     	<menu_item_call
              label="Firestorm YouTube"
+             visible="false"
              name="Firestorm YouTube">
              <menu_item_call.on_click
              function="PromptShowURL"
@@ -2647,6 +2651,7 @@
        </menu_item_call>
     	<menu_item_call
              label="Firestorm Twitter"
+             visible="false"
              name="Firestorm Twitter">
              <menu_item_call.on_click
              function="PromptShowURL"
@@ -2655,15 +2660,17 @@
        </menu_item_call>
     	<menu_item_call
              label="Firestorm Plurk"
+             visible="false"
              name="Firestorm Plurk">
              <menu_item_call.on_click
              function="PromptShowURL"
              name="firestorm_plurk_url"
              parameter="WebLaunchExternalTarget,http://www.plurk.com/ThePhoenixViewerProject" />
        </menu_item_call>
-       <menu_item_separator/>
+       <menu_item_separator visible="false"/>
        <menu_item_call
              label="Message of the day"
+             visible="false"
              name="Firestorm MoTD">
              <menu_item_call.on_click
              function="Advanced.ToggleHUDInfo"
@@ -2691,8 +2698,8 @@
         
         <menu_item_call
          label="Firestorm Wiki"
-         name="Firestorm Wiki"
-	     shortcut="F1">
+         visible="false"
+         name="Firestorm Wiki">
              <menu_item_call.on_click
              function="PromptShowURL"
              name="script_library_url"
@@ -2701,6 +2708,7 @@
         
         <menu_item_call
          label="Troubleshooting"
+         visible="false"
          name="Troubleshooting">
             <menu_item_call.on_click
              function="PromptShowURL"
@@ -2710,17 +2718,16 @@
 	   
         <menu_item_call
          label="Join Firestorm Support Group"
+         visible="false"
          name="firestorm_support_group">
             <menu_item_call.on_click
              function="Advanced.WebBrowserTest"
              parameter="https://wiki.firestormviewer.org/firestorm_support_groups_join" />
-            <menu_item_call.on_visible
-             function="GridCheck"
-             parameter="secondlife" />
         </menu_item_call>
 
         <menu_item_call
          label="Firestorm Classes Schedule"
+         visible="false"
          name="Firestorm Classes Schedule">
              <menu_item_call.on_click
              function="PromptShowURL"
@@ -2730,6 +2737,7 @@
 
         <menu_item_call
          label="Firestorm Events Calendar"
+         visible="false"
          name="Firestorm Events Calendar">
              <menu_item_call.on_click
              function="PromptShowURL"
@@ -2739,6 +2747,7 @@
 
         <menu_item_check
          label="Guidebook"
+         visible="false"
          name="How To">
             <menu_item_check.on_click
              function="Help.ToggleHowTo"
@@ -2840,6 +2849,7 @@
             </menu_item_call>
         <menu_item_call
              label="Report Problem"
+             visible="false"
              name="Report Bug">
                 <menu_item_call.on_click
                  function="Advanced.ReportBug"/>

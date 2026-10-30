@@ -230,7 +230,8 @@ if (DARWIN)
   add_compile_definitions(GL_SILENCE_DEPRECATION=1)
 
   set(ENABLE_SIGNING TRUE)
-  set(SIGNING_IDENTITY "Developer ID Application: The Phoenix Firestorm Project, Inc." )
+  # Local packaging falls back to ad-hoc signing (see viewer_manifest.py)
+  set(SIGNING_IDENTITY "" CACHE STRING "macOS code signing identity used when packaging")
 endif(DARWIN)
 
 if (LINUX OR DARWIN)

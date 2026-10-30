@@ -96,6 +96,12 @@ std::string LLViewerHelp::getURL(const std::string &topic)
 
 void LLViewerHelp::showTopic(const std::string& topic)
 {
+    // No help site is configured for Companion Viewer
+    if (gSavedSettings.getString("HelpURLFormat").empty())
+    {
+        return;
+    }
+
     // <FS:Beq> allow external browser for help topics
     auto url = getURL(topic);
     if ( LLWeb::useExternalBrowser(url) )
