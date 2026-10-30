@@ -3536,7 +3536,8 @@ bool idle_startup()
 
         // Display Avatar Welcome Pack the first time a user logs in
         // (or clears their settings....)
-        if (gSavedSettings.getBOOL("FirstLoginThisInstall"))
+        // Companion Viewer: don't show the Avatar Welcome Pack on first run (still available from the menu)
+        if (false && gSavedSettings.getBOOL("FirstLoginThisInstall"))
         {
             LLFloater* avatar_welcome_pack_floater = LLFloaterReg::findInstance("avatar_welcome_pack");
             if (avatar_welcome_pack_floater != nullptr)
@@ -3559,7 +3560,7 @@ bool idle_startup()
         gSavedSettings.setBOOL("FirstLoginThisInstall", false);
 
         // <FS:Techwolf Lupindo> FIRE-6643 Display MOTD when login screens are disabled
-        if (gSavedSettings.getBOOL("FSDisableLoginScreens"))
+        if (gSavedSettings.getBOOL("FSDisableLoginScreens") && !gAgent.mMOTD.empty())
         {
             FSCommon::report_to_nearby_chat(gAgent.mMOTD);
         }
@@ -5064,7 +5065,7 @@ bool process_login_success_response(U32 &first_sim_size_x, U32 &first_sim_size_y
 
     // If MOTD has not been set by fsdata, fallback to LL MOTD
 // <FS:CR> FIRE-8571, FIRE-9274
-    if (gAgent.mMOTD.empty() || !LLGridManager::getInstance()->isInSLMain())
+    if (FSData::MOTD_ENABLED && (gAgent.mMOTD.empty() || !LLGridManager::getInstance()->isInSLMain()))
 // </FS:CR>
     {
         gAgent.mMOTD.assign(response["message"]);

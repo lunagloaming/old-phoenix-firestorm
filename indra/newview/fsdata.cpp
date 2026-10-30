@@ -414,7 +414,11 @@ void FSData::downloadAgents()
 void FSData::processData(const LLSD& fs_data)
 {
     // Set Message Of The Day if present
-    if (fs_data.has("MOTD") && !fs_data["MOTD"].asString().empty())
+    if (!MOTD_ENABLED)
+    {
+        // Companion Viewer: ignore Firestorm's MOTD entries
+    }
+    else if (fs_data.has("MOTD") && !fs_data["MOTD"].asString().empty())
     {
         mSecondLifeMOTD = fs_data["MOTD"].asString();
         gAgent.mMOTD.assign(mSecondLifeMOTD);
@@ -427,7 +431,7 @@ void FSData::processData(const LLSD& fs_data)
     }
 
     // If the event falls withen the current date, use that for MOTD instead.
-    if (fs_data.has("EventsMOTD"))
+    if (MOTD_ENABLED && fs_data.has("EventsMOTD"))
     {
         const LLSD& events = fs_data["EventsMOTD"];
         for(LLSD::map_const_iterator iter = events.beginMap(); iter != events.endMap(); ++iter)
@@ -444,7 +448,7 @@ void FSData::processData(const LLSD& fs_data)
         }
     }
 
-    if (fs_data.has("OpensimMOTD"))
+    if (MOTD_ENABLED && fs_data.has("OpensimMOTD"))
     {
         mOpenSimMOTD.assign(fs_data["OpensimMOTD"]);
     }
@@ -634,7 +638,7 @@ void FSData::processClientTags(const LLSD& tags)
 //   show main MOTD if defined, or show a random MOTD if defined
 void FSData::selectNextMOTD()
 {
-    if (LLGridManager::instance().isInSLMain())
+    if (MOTD_ENABLED && LLGridManager::instance().isInSLMain())
     {
         if (!mSecondLifeMOTD.empty())
         {
