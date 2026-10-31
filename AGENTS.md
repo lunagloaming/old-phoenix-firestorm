@@ -176,7 +176,7 @@ Details worth knowing:
 
 ## Next feature: LLM companion agent (planned, not started)
 Full plan: [`doc/companion-agent-plan.md`](doc/companion-agent-plan.md). Summary:
-- Connect the logged-in avatar to KoboldCPP, Claude or OpenAI. It hears chat, looks around,
+- Connect the logged-in avatar to KoboldCPP or Ollama (local back ends). It hears chat, looks around,
   and comments on the world and other avatars.
 - Uses **LEAP** (`indra/llcommon/llleap.cpp`): the viewer launches a helper (`--leap "<cmd>"`) that
   calls the viewer's existing event APIs (`indra/newview/*listener.cpp`) over stdin/stdout.
@@ -186,5 +186,8 @@ Full plan: [`doc/companion-agent-plan.md`](doc/companion-agent-plan.md). Summary
   - **Vision:** 360 cube faces first; an aimed snapshot only for close-ups.
   - **LLM replies are drafted into the matching chat input, never sent:** the user reviews,
     edits and presses Enter.
+  - **MVP:** a "give me my next line" button beside Send in nearby chat; one cycle drafts one line
+    from recent chat (plus the sim view when chat refers to surroundings). The character comes from
+    the avatar's own profile (Notes, First Life, Picks). Not a scripted agent.
 - Viewer work needed: publish incoming chat and IMs to event pumps, add a `draftChat` op, and add
   a `captureCubeFaces` op refactored out of `LLFloater360Capture`.
