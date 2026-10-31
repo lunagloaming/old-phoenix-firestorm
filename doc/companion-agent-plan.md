@@ -1,4 +1,4 @@
-# Companion Agent: connect an LLM (KoboldCPP / Claude / OpenAI) to the avatar
+# Companion Agent: connect a local LLM (KoboldCPP or Ollama) to the avatar
 
 **Status (2026-10-30):** planned, not started. Repo `<repo>`, branch
 `companion-rebrand` (last commit `34b937c0`). No code for this plan has been written yet.
@@ -15,8 +15,10 @@
 - **Human in the loop for speech.** LLM output is never sent automatically: it is placed in the
   input box of the chat it belongs to (nearby chat, or that IM session) *without* pressing Enter,
   so the user can review, edit, and send it themselves.
-- **Integration via LEAP**, the viewer's existing child-process plugin protocol; providers:
-  KoboldCPP, Claude (Anthropic API), OpenAI.
+- **Integration via LEAP**, the viewer's existing child-process plugin protocol; back ends:
+  **KoboldCPP or Ollama** (both local; updated 2026-10-30). Claude (Anthropic API) and OpenAI are not
+  planned; the provider trait below keeps them possible later. SillyTavern is not a back end or a
+  dependency; we only borrow its prompt-structure ideas (see the persona section).
 
 ## MVP scope (stated by the user 2026-10-30)
 - We are an ordinary user of a viewer, using chat completion and exploring what comes of it. This is
@@ -135,12 +137,15 @@ Modules:
     the target facing it (focus at head height), `setCameraParams` locked, wait ~1.5 s for
     textures, `saveSnapshot` (1024×768, no UI/HUD), `removeCameraParams`.
   - Downscale/re-encode before upload.
-- `llm/` — `trait Provider { async fn chat(&self, msgs, images, tools) -> Reply }`, two impls over
-  plain `reqwest` + serde types:
-  - `openai.rs` — Chat Completions format: OpenAI, and KoboldCPP at `http://localhost:5001/v1`
-    (vision needs a model loaded with its mmproj).
-  - `anthropic.rs` — Messages API with image blocks + tool use; default model
-    `claude-opus-5-5`, configurable.
+- `llm/` — `trait Provider { async fn chat(&self, msgs, images, tools) -> Reply }`, one impl is enough for the
+  planned back ends, over plain `reqwest` + serde types:
+  - `openai.rs` — Chat Completions format, which both speak: KoboldCPP at
+    `http://localhost:5001/v1` (vision needs a model loaded with its mmproj) and Ollama at
+    `http://localhost:11434/v1` (vision needs a multimodal model, such as the Qwen-VL or Gemma
+    families; check which models and image inputs the installed Ollama version accepts).
+    `base_url` and `model` are config, so the same code serves either; it would also serve OpenAI.
+  - `anthropic.rs` — not planned. A Messages API client with image blocks and tool use could be
+    added behind the same trait if wanted.
   - Fallback "no tools" mode for local models with weak tool calling: attach a fresh `look` when
     asked about appearance; plain-text replies only.
 - `agent.rs` — event loop:
@@ -157,8 +162,8 @@ Modules:
     "stop"/"quiet" kill word from owner, never act on chat from objects.
 - `main.rs` + `config.rs` — config at
   `~/Library/Application Support/CompanionViewer/companion_agent.json` (provider, model, base_url,
-  persona, trigger mode, owner name); API keys from env vars (`ANTHROPIC_API_KEY`,
-  `OPENAI_API_KEY`) or the file (created 0600). Keys never go in viewer settings.
+  persona, trigger mode, owner name); local back ends need no key. If a hosted provider is added,
+  keys come from env vars or the file (created 0600) and never go in viewer settings.
 
 ### 3. Launch
 - Development: `--leap "indra/newview/companion_agent/target/release/companion-agent"`.
@@ -170,7 +175,59 @@ Modules:
 - This is not a scripted agent (not a bot): it is a normal viewer driven by its user, who reviews
   and sends every line. No Scripted Agent registration applies for now; revisit only if that changes
   (for example if lines were ever sent without the user).
-- Snapshots of other residents go to the chosen provider; KoboldCPP keeps everything local.
+- Snapshots of other residents go to the back end; KoboldCPP and Ollama on this machine keep everything local.
+
+## Persona and context from the avatar's own profile (stated by the user 2026-10-30)
+The character's definition lives in the logged-in avatar's profile, so it is edited in-world with the
+normal profile editor and travels with the avatar. **Send three profile fields as context:**
+1. **Notes tab:** the main one. Anything the user wants the model to know or obey: character
+   details, how to speak, things to avoid, standing instructions.
+2. **First Life tab:** more background about the character (the user may put some character details here too).
+3. **Picks:** each pick's name, description and place (sim name) as interests, favourite places and
+   background colour.
+
+(The viewer already holds all of this in `LLAvatarData` (`notes`, `fl_about_text`, `about_text`,
+the picks list) and `LLPickData` (`name`, `desc`, `sim_name`) in `llavatarpropertiesprocessor.h`.
+No listener exposes them to LEAP yet; this needs a small new op, **step 1d: `getOwnProfile`**,
+returning the notes, first-life text, about text and picks of the logged-in avatar, and an event when
+they change so the helper can refresh. To verify when building: that the Notes tab text for one's
+own avatar is populated and fetchable, and that long text is not truncated.)
+
+### How to structure the prompt (borrowing SillyTavern's ideas)
+SillyTavern builds a prompt from a character card plus ordered, injectable sections. We do not use
+SillyTavern; we build the prompt ourselves in the Rust helper and send it to KoboldCPP or Ollama.
+Map the same ideas onto our sources, so each piece has one place and one budget:
+
+| SillyTavern idea (as an analogy) | Our source |
+|---|---|
+| System prompt / instructions | built-in default ("you suggest the next line for this avatar in local chat; one short in-character line; never claim to be the user's real self") plus any instruction-style text in Notes |
+| Character description / personality | Notes tab |
+| Backstory / scenario background | First Life tab |
+| Interests and places (like lorebook flavour) | Picks (name + description + place) |
+| Scenario (the current situation) | live: region name, parcel, time, nearby avatars with distances and bearings |
+| Example dialogue | optional lines in Notes under a marked heading (see below) |
+| Chat history | rolling transcript of nearby chat, newest last |
+| Author's note / depth injection | a short reminder re-inserted near the end of the prompt each turn ("reply as <name>, one or two short lines") so long chats don't drift |
+| Lorebook / world info (keyword-triggered entries) | later: Picks or marked Notes entries injected only when their keywords appear in recent chat, to save context |
+| Images | cube faces only on turns where chat refers to surroundings (see MVP scope) |
+
+**Suggested order** (stable prefix first, so back ends that cache the prompt prefix can reuse it): system
+prompt, Notes, First Life, Picks, example dialogue, then the changing parts: scenario, nearby avatars,
+recent chat, images, author's note, and the request to draft the next line.
+
+**Light structure inside the Notes tab (optional).** Plain prose works; for more control the helper can
+recognise a few headings if present, for example `## Instructions`, `## Personality`,
+`## Example dialogue`, `## Avoid`, and treat everything else as description. No heading is
+required; unmarked text is just character details. Decide the exact marker syntax when building.
+
+**Budget and limits.**
+- Each field has a character cap and is trimmed from the end, with Notes taking priority, then First
+  Life, then Picks. Local models have small contexts, so the caps are settings.
+- Re-read the profile only when it changes (the event in 1d), not every turn.
+- **Privacy:** profile text goes to the back end. These are the user's own words about their own
+  avatar, but anything private in Notes is sent too. KoboldCPP and Ollama keep it on this machine; say so in the settings UI if a hosted back end is ever added.
+- Profile text is instructions from the user, but treat chat from other residents as untrusted
+  input: it must not be able to change the persona or the standing instructions.
 
 ## Design refinements from an outside discussion (proposals, not decisions)
 Summary of a conversation with another assistant (2026-10-30), recorded for when we start work.
@@ -182,7 +239,7 @@ sale and picks the one it likes. It does not walk or buy; the user does that.
 image and ask for a verdict (small local models do badly at that). Give it tools and run a loop:
 the helper sends the current observation plus the model's own notes, the model answers with one
 action, the helper carries it out and returns the result, and it repeats until the model chooses.
-KoboldCPP can run this with a vision-language model plus `--mmproj`; Qwen-VL and Gemma-family
+KoboldCPP can run this with a vision-language model plus `--mmproj` (Ollama with a multimodal model); Qwen-VL and Gemma-family
 models were named as strong at reading text and locating things in images.
 
 **Proposed tools**, and how each maps onto the plan above:
@@ -253,4 +310,4 @@ does not apply while a human sends every line (see "Notes for the user").
    → it replies; ask "what do I look like?" → it looks at the speaker and describes them; "what's
    around here?" → `captureCubeFaces` faces appear in the temp dir and it describes the
    surroundings in all directions (also confirm the 360 floater still captures and saves as before); owner IM "quiet" silences it. Repeat with each
-   provider (KoboldCPP, Anthropic, OpenAI).
+   back end (KoboldCPP, Ollama).
