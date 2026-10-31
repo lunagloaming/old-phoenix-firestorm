@@ -75,7 +75,7 @@ rootless Ubuntu 24.04 chroot.
    range). It also installs `.chroot/enter [cmd]`, which runs a command in the chroot as your own
    user (root inside maps to you); the repo and `../fs-build-variables` (read-only) are mounted at
    their own paths. Tested from scratch: a clean chroot reports g++-14 14.3, cmake 3.28.3, ninja
-   1.11.1, autobuild 3.10.2 (a full viewer build in it has not been repeated). `../fs-build-variables`
+   1.11.1, autobuild 3.10.2, and a full viewer build in it succeeds (2026-10-31, see step 2). `../fs-build-variables`
    must be cloned first (see the macOS section, step 1; the Xcode deployment-target edit is macOS-only). Our current `.chroot` began as a copy of `../multibox-memory/.chroot`.
 2. **Build:**
    ```sh
@@ -85,6 +85,14 @@ rootless Ubuntu 24.04 chroot.
    `--chan=Alpha` gives the channel `CompanionViewer-Alpha` (the name is prepended; don't pass
    `CompanionViewer`). Output: `build-linux-x86_64/newview/packaged/`. A change to a widely
    included header recompiles ~180 files.
+
+   **Measured full build (2026-10-31, clean checkout and fresh chroot):** 15 min 19 s wall clock for
+   the command above (configure, library downloads and the ~70 s CMake step included; 1358 ninja
+   steps; packaging and the `.tar.xz` included), 0 errors, 0 warnings. Machine: Intel Core i7-14700K
+   (20 cores / 28 threads, 5.6 GHz max), 31 GiB RAM, Samsung 990 PRO NVMe, CachyOS (kernel
+   7.3.0) host, `--jobs 14`. Peak system RAM in use during the build was about 25 GiB (whole
+   machine, desktop included), so 16 GB machines should lower `--jobs`. A shallow clone gives build
+   number `.31` (`git rev-list --count HEAD`) instead of the upstream revision count; harmless.
 3. **Never run from `packaged/`.** Packaging deletes and recreates it, which breaks a running viewer
    (SSL CA errors, then a crash opening Preferences). Install a copy and run that:
    ```sh
@@ -172,7 +180,7 @@ Details worth knowing:
 - Background data feeds (grid list, grid status, fsdata) still use Firestorm servers;
   `defaults.7.2.5.xml` from phoenixviewer.com returns 403 to this viewer.
 - In-world screens haven't been reviewed in the new color scheme yet.
-- Only the macOS build has been exercised.
+- Only the macOS build has been exercised in-world. The Linux build compiles, packages and installs (2026-10-31) but has not been run yet.
 
 ## Next feature: LLM companion agent (planned, not started)
 Full plan: [`doc/companion-agent-plan.md`](doc/companion-agent-plan.md). Summary:
