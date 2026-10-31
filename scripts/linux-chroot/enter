@@ -1,0 +1,42 @@
+#!/bin/bash
+# Run a command (default: bash) in the Ubuntu 24.04 build chroot, rootless.
+# Root inside is the user outside; the subuid/subgid range covers the other ids.
+# The repo is mounted at its own path, fs-build-variables read-only.
+set -euo pipefail
+
+HERE="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+ROOTFS="$HERE/rootfs"
+REPO="$(dirname "$HERE")"
+FSVARS="${FSVARS:-$HOME/Projects/fs-build-variables}"
+
+# Start in the current directory when it is inside the repo, else at the repo root.
+case "$PWD/" in
+    "$REPO"/*) WORKDIR="$PWD" ;;
+    *) WORKDIR="$REPO" ;;
+esac
+
+[ $# -eq 0 ] && set -- bash
+
+exec unshare --map-auto --map-root-user --mount --pid --fork --propagation private \
+    /bin/bash -euc '
+ROOTFS="$1" REPO="$2" FSVARS="$3" WORKDIR="$4"; shift 4
+mount -t proc proc "$ROOTFS/proc"
+mount --rbind /sys "$ROOTFS/sys"
+mount --rbind /dev "$ROOTFS/dev"
+mount -t tmpfs tmpfs "$ROOTFS/dev/shm"
+cat /etc/resolv.conf > "$ROOTFS/etc/resolv.conf"
+mkdir -p "$ROOTFS$REPO"
+mount --rbind "$REPO" "$ROOTFS$REPO"
+if [ -d "$FSVARS" ]; then
+    mkdir -p "$ROOTFS$FSVARS"
+    mount --bind "$FSVARS" "$ROOTFS$FSVARS"
+    mount -o remount,bind,ro "$ROOTFS$FSVARS"
+fi
+exec chroot "$ROOTFS" /usr/bin/env -i \
+    HOME=/root TERM="${TERM:-xterm}" LANG=C.UTF-8 \
+    PATH=/opt/autobuild/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    CC=gcc-14 CXX=g++-14 \
+    AUTOBUILD_VARIABLES_FILE="$FSVARS/variables" \
+    PS1="(chroot) \\w\\$ " \
+    /bin/bash -c "cd \"\$0\" && exec \"\$@\"" "$WORKDIR" "$@"
+' bash "$ROOTFS" "$REPO" "$FSVARS" "$WORKDIR" "$@"
