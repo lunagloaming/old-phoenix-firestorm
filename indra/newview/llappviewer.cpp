@@ -3439,12 +3439,6 @@ bool LLAppViewer::initConfiguration()
                 {
                     LL_WARNS() << "Failed --set " << name << ": setting name unknown." << LL_ENDL;
                 }
-                // <FS:Luna Witch> Remember session-only overrides so the login screen can list them
-                else
-                {
-                    mCommandLineOverrides.push_back(name + "=" + value);
-                }
-                // </FS:Luna Witch>
             }
         }
     }
