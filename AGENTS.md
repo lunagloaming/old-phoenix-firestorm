@@ -76,7 +76,7 @@ rootless Ubuntu 24.04 chroot.
    user (root inside maps to you); the repo and `../fs-build-variables` (read-only) are mounted at
    their own paths. Tested from scratch: a clean chroot reports g++-14 14.3, cmake 3.28.3, ninja
    1.11.1, autobuild 3.10.2 (a full viewer build in it has not been repeated). `../fs-build-variables`
-   must be cloned first (see the macOS section, step 1; the Xcode deployment-target edit is macOS-only). Our current `.chroot` began as a copy of `../multibox-memory/.chroot`.
+   must be cloned first (see the macOS section, step 1; the Xcode deployment-target edit is macOS-only).
 2. **Build:**
    ```sh
    .chroot/enter bash -c 'autobuild configure -A 64 -c ReleaseFS_open -- --ninja --jobs 14 --chan=Alpha -DLL_TESTS:BOOL=FALSE &&
@@ -98,8 +98,9 @@ rootless Ubuntu 24.04 chroot.
 
 ## Running several viewers
 Work ported from the `multibox-memory` branch of `../multibox-memory` (cherry-picked, tags
-`<FS:Luna Witch>`; its README documents the settings and measurements). Running several viewers at
-once is the reason for the memory work.
+`<FS:Luna Witch>`). Running several viewers at once is the reason for the memory work. Full
+write-up (changes, settings table, measurements, open items, test procedure and test scripts,
+macOS notes): [`doc/multibox-memory.md`](doc/multibox-memory.md).
 - **Cache:** each instance locks the lowest free `instance_<n>.lock` in the base cache folder and
   uses `<cache>/<n+1>` as its own fully writable cache (texture, disk, object). This is applied in
   `LLDir::getCacheDir()`; `getCacheBaseDir()` is the unsuffixed path. Caches are deliberately not
@@ -113,10 +114,12 @@ once is the reason for the memory work.
   heap pages return at once (`FSHeapDecayMs`); flexi prims, colour changes and scripted
   hide/show no longer rebuild whole attachments (`FSOctreeBridgeMoveSlack`,
   `FSInPlaceColorUpdates`); `FSVBOAllocTrace` is a debug trace.
-- Not taken: the Main/Alt launcher scripts (they live outside that repo too). To tell one instance
+- No launcher scripts or per-role profiles: the goal is one well-behaved cooperative viewer. To tell one instance
   from another, check `COMPANIONVIEWER_USER_DIR` in `/proc/<pid>/environ`.
 - Check "show in place after a group rebuild" in-world with the test cube script in
-  `../multibox-memory/AGENTS.md`.
+  `doc/multibox-memory.md`.
+- Working rules for tests (ask before launching a viewer, never edit a running launcher in place,
+  abort cache moves if a viewer runs) are in that file's "Testing" section.
 
 ## New-install defaults
 The tester's preference choices (double-click teleport, sound and mute toggles, 20 GB caches, chat
