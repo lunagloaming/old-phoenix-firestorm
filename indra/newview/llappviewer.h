@@ -117,7 +117,6 @@ public:
     bool quitRequested() { return mQuitRequested; }
     bool logoutRequestSent() { return mLogoutRequestSent; }
     bool isSecondInstance() { return mSecondInstance; }
-    const std::vector<std::string>& getCommandLineOverrides() const { return mCommandLineOverrides; } // <FS:Luna Witch/> "Name=value" for each --set
     void writeDebugInfo(bool isStatic=true);
 
     void setServerReleaseNotesURL(const std::string& url) { mServerReleaseNotesURL = url; }
@@ -340,7 +339,6 @@ private:
     static LLAppViewer* sInstance;
 
     bool mSecondInstance; // Is this a second instance of the app?
-    std::vector<std::string> mCommandLineOverrides; // <FS:Luna Witch/> Session-only --set overrides, for display
 
     std::string mMarkerFileName;
     LLAPRFile mMarkerFile; // A file created to indicate the app is running.
