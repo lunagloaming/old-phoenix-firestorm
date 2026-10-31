@@ -32,12 +32,11 @@
 #include "llframetimer.h"
 #include "llsingleton.h"
 
-// Each running viewer holds an exclusive lock on one "instance_<n>.lock" file in the
-// cache directory it uses. Slot 0 owns the shared caches (texture cache, disk cache purge);
-// higher slots use them read-only and keep per-slot caches where sharing is not possible
-// (e.g. the object cache). Unlike the exec marker in the logs directory, this follows the
-// cache directory actually in use, so instances with separate user directories but one
-// CacheLocation still coordinate, and instances with separate CacheLocations each own theirs.
+// Each running viewer holds an exclusive lock on one "instance_<n>.lock" file in the base cache
+// directory. Slot n then uses the sub-folder "<cache>/<n+1>" as its own, fully writable cache
+// (texture cache, object cache, disk cache), so instances never share or fight over cache files.
+// The lock follows the cache directory actually in use, so instances with separate user
+// directories but one CacheLocation still get different sub-folders.
 class FSInstanceSlots : public LLSingleton<FSInstanceSlots>
 {
     LOG_CLASS(FSInstanceSlots);

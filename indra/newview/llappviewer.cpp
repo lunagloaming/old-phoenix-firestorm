@@ -1020,7 +1020,12 @@ bool LLAppViewer::init()
     // <FS:Luna Witch> Claim an instance slot in the cache directory before sizing threads and opening caches.
     // initCache() sets the cache directory again (and handles a pending location change); this only resolves it early.
     gDirUtilp->setCacheDir(gSavedSettings.getString("CacheLocation"));
-    FSInstanceSlots::instance().acquire(gDirUtilp->getCacheDir());
+    const S32 instance_slot = FSInstanceSlots::instance().acquire(gDirUtilp->getCacheBaseDir());
+    if (instance_slot >= 0)
+    {
+        // Every instance owns a writable cache of its own: <cache>/1, <cache>/2, ...
+        gDirUtilp->setInstanceCacheSubdir(std::to_string(instance_slot + 1));
+    }
     // </FS:Luna Witch>
 
     initThreads();
@@ -5222,7 +5227,7 @@ void LLAppViewer::migrateCacheDirectory()
         gSavedSettings.setBOOL("MigrateCacheDirectory", false);
 
         std::string old_cache_dir = gDirUtilp->add(gDirUtilp->getOSUserAppDir(), "cache");
-        std::string new_cache_dir = gDirUtilp->getCacheDir(true);
+        std::string new_cache_dir = gDirUtilp->getCacheBaseDir(true); // <FS:Luna Witch/> setCacheDir() below takes a base path
 
         if (gDirUtilp->fileExists(old_cache_dir))
         {
@@ -5311,7 +5316,9 @@ bool LLAppViewer::initCache()
     //LLAppViewer::getTextureCache()->setReadOnly(read_only) ;
     //LLVOCache::initParamSingleton(read_only);
     FSInstanceSlots& instance_slots = FSInstanceSlots::instance();
-    bool read_only = !instance_slots.ownsSharedCache();
+    // Every slotted instance has its own cache folder (see LLDir::setInstanceCacheSubdir), so only an
+    // instance without a slot (all taken) has to treat the shared base folder as read-only.
+    bool read_only = instance_slots.getSlot() < 0;
     LLAppViewer::getTextureCache()->setReadOnly(read_only) ;
     LLVOCache::initParamSingleton(instance_slots.getSlot() < 0);
     // </FS:Luna Witch>
