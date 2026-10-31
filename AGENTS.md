@@ -68,10 +68,15 @@ Logs: `~/Library/Application Support/CompanionViewer/logs/CompanionViewer.log`.
 Needs **GCC 14** (Ubuntu 24.04); `doc/building_linux.md` still says GCC 11, which fails. We build in a
 rootless Ubuntu 24.04 chroot.
 
-1. **Chroot:** `.chroot/` (about 1.8 GB, ignored via `.git/info/exclude`) was copied from the
-   sibling `../multibox-memory` clone. `.chroot/enter [cmd]` runs a command in it as an unprivileged
-   user; the repo and `../fs-build-variables` (read-only) are mounted at their own paths. Without
-   it, copy `.chroot` from that clone again.
+1. **Chroot:** `.chroot/` (about 1.8 GB, ignored via `.git/info/exclude`). Create it with
+   `scripts/linux-chroot/setup.sh` (downloads the Ubuntu 24.04 base image, adds GCC 14 from the
+   `ubuntu-toolchain-r/test` PPA, cmake, ninja, the GL/X11/pulse dev packages, and a venv at
+   `/opt/autobuild` with autobuild 3.10.2 and llsd 1.2.4; a few minutes, needs a `/etc/subuid`
+   range). It also installs `.chroot/enter [cmd]`, which runs a command in the chroot as your own
+   user (root inside maps to you); the repo and `../fs-build-variables` (read-only) are mounted at
+   their own paths. Tested from scratch: a clean chroot reports g++-14 14.3, cmake 3.28.3, ninja
+   1.11.1, autobuild 3.10.2 (a full viewer build in it has not been repeated). `../fs-build-variables`
+   must be cloned first (see the macOS section, step 1; the Xcode deployment-target edit is macOS-only). Our current `.chroot` began as a copy of `../multibox-memory/.chroot`.
 2. **Build:**
    ```sh
    .chroot/enter bash -c 'autobuild configure -A 64 -c ReleaseFS_open -- --ninja --jobs 14 --chan=Alpha -DLL_TESTS:BOOL=FALSE &&
