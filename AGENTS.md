@@ -6,7 +6,7 @@ Notes for coding agents (and humans) resuming work on this repo from any machine
 Companion Viewer is a fork of the Firestorm Second Life viewer (tag
 `Firestorm_Release_7.2.5.81788`), rebranded as **"Companion Viewer"** (display name) /
 **`CompanionViewer`** (files, channel, folders, binaries). It is not affiliated with or supported
-by the Firestorm project. All work so far is on branch **`companion-rebrand`** (base: `main`).
+by the Firestorm project. Rebrand work is on branch **`companion-rebrand`** (base: `main`); ongoing work is on **`dev`**, which also carries the multibox-memory port.
 
 ## Owner preferences
 - **No Python for new code.** Helpers, plugins and tooling we add are written in **Rust** (or in the
@@ -64,7 +64,63 @@ Tested on macOS 27 with Xcode 27.2, producing a universal (arm64 + x86_64) build
 
 Logs: `~/Library/Application Support/CompanionViewer/logs/CompanionViewer.log`.
 
-## Changes so far (branch `companion-rebrand`)
+## Building (Linux)
+Needs **GCC 14** (Ubuntu 24.04); `doc/building_linux.md` still says GCC 11, which fails. We build in a
+rootless Ubuntu 24.04 chroot.
+
+1. **Chroot:** `.chroot/` (about 1.8 GB, ignored via `.git/info/exclude`) was copied from the
+   sibling `../multibox-memory` clone. `.chroot/enter [cmd]` runs a command in it as an unprivileged
+   user; the repo and `../fs-build-variables` (read-only) are mounted at their own paths. Without
+   it, copy `.chroot` from that clone again.
+2. **Build:**
+   ```sh
+   .chroot/enter bash -c 'autobuild configure -A 64 -c ReleaseFS_open -- --ninja --jobs 14 --chan=Alpha -DLL_TESTS:BOOL=FALSE &&
+     autobuild build -A 64 -c ReleaseFS_open --no-configure -- --ninja --jobs 14 --chan=Alpha -DLL_TESTS:BOOL=FALSE'
+   ```
+   `--chan=Alpha` gives the channel `CompanionViewer-Alpha` (the name is prepended; don't pass
+   `CompanionViewer`). Output: `build-linux-x86_64/newview/packaged/`. A change to a widely
+   included header recompiles ~180 files.
+3. **Never run from `packaged/`.** Packaging deletes and recreates it, which breaks a running viewer
+   (SSL CA errors, then a crash opening Preferences). Install a copy and run that:
+   ```sh
+   rsync -rptgoDLK --exclude='bin/.debug' build-linux-x86_64/newview/packaged/ ~/.local/opt/companionviewer-alpha/
+   chmod 755 ~/.local/opt/companionviewer-alpha/bin/{dullahan_host,chrome-sandbox,SLVoice}
+   ```
+   Check no viewer is running before the rsync. The launcher is
+   `~/.local/share/applications/companionviewer-alpha.desktop` (outside the repo).
+4. **User data:** `~/.companionviewer` (override: `COMPANIONVIEWER_USER_DIR`). Log:
+   `~/.companionviewer/logs/CompanionViewer.log`.
+
+## Running several viewers
+Work ported from the `multibox-memory` branch of `../multibox-memory` (cherry-picked, tags
+`<FS:Luna Witch>`; its README documents the settings and measurements). Running several viewers at
+once is the reason for the memory work.
+- **Cache:** each instance locks the lowest free `instance_<n>.lock` in the base cache folder and
+  uses `<cache>/<n+1>` as its own fully writable cache (texture, disk, object). This is applied in
+  `LLDir::getCacheDir()`; `getCacheBaseDir()` is the unsuffixed path. Caches are deliberately not
+  shared, so the second instance downloads what it needs. Only a 9th instance falls back to the
+  base folder, read-only.
+- **Instance-aware defaults:** the texture GPU budget and image-decode threads are divided by the
+  number of running instances. A second instance sharing the user directory does not overwrite
+  `settings.xml` on exit.
+- **Memory:** bake-mask textures are not uploaded; vertex-buffer CPU copies are freed after 10 s
+  (`FSVBOReleaseStagingSecs`); uploads go through a staging buffer (`FSVBOGPUCopyUpload`); freed
+  heap pages return at once (`FSHeapDecayMs`); flexi prims, colour changes and scripted
+  hide/show no longer rebuild whole attachments (`FSOctreeBridgeMoveSlack`,
+  `FSInPlaceColorUpdates`); `FSVBOAllocTrace` is a debug trace.
+- Not taken: the Main/Alt launcher scripts (they live outside that repo too). To tell one instance
+  from another, check `COMPANIONVIEWER_USER_DIR` in `/proc/<pid>/environ`.
+- Check "show in place after a group rebuild" in-world with the test cube script in
+  `../multibox-memory/AGENTS.md`.
+
+## New-install defaults
+The tester's preference choices (double-click teleport, sound and mute toggles, 20 GB caches, chat
+and radar options, RLVa on, ...) are the shipped defaults in `app_settings/settings.xml` and
+`settings_per_account.xml`. Graphics and hardware tuning is left to the viewer's autodetection;
+don't copy those from a used profile. A used profile's `settings.xml` lists only values that differ
+from the defaults, but that includes autodetected and session state.
+
+## Changes so far (branch `companion-rebrand`; work now continues on `dev`)
 | Commit | Summary |
 |---|---|
 | `fb215341` | Rebrand to Companion Viewer: names, channel, packaging, English-only UI, Firestorm links/services hidden, new artwork, bundled login page |
