@@ -18,6 +18,30 @@
 - **Integration via LEAP**, the viewer's existing child-process plugin protocol; providers:
   KoboldCPP, Claude (Anthropic API), OpenAI.
 
+## MVP scope (stated by the user 2026-10-30)
+- We are an ordinary user of a viewer, using chat completion and exploring what comes of it. This is
+  **not** a scripted agent or bot, so there is no Scripted Agent registration work for now.
+- **The loop:** listen to open (nearby) chat, then suggest the avatar's own next line by **pre-filling
+  the chat box**. The user edits it and presses Enter. Then repeat.
+- **Turn-taking is the user's call: a "give me my next line" button** beside the Send button in the
+  nearby-chat window. Pressing it starts one cycle (gather recent chat, look if needed, ask the model,
+  draft the reply). There is no automatic "everyone has had a turn" logic.
+- **Being addressed by name is not a separate feature.** A chat line that names the avatar can start
+  the same cycle automatically (or just show the button as highlighted; choose when building). Either
+  way the result is the same: text offered in the chat box for the user to edit and submit.
+- **The sim view is context, and it makes the MVP harder than it sounds.** When people refer to
+  things around them ("that dress", "over there", "who's that?"), the model needs to see the
+  surroundings to follow. That means deciding when to look (a tool the model calls, or a heuristic
+  in the no-tools fallback), and attaching the cube faces (and the nearby-avatar list) to that turn.
+- Not in the MVP: IM sessions, ambient comments, body actions, the shop-browsing agent loop below
+  (that is the later, richer version).
+- **Viewer work this adds (step 1c):** the button in the nearby-chat window (XUI in
+  `floater_fs_nearby_chat.xml` plus a C++ handler) that posts a "suggest" event to the helper's
+  LEAP pump. If the chat box already holds text the user typed, the draft must not overwrite it
+  (`draftChat` returns `busy`, as already planned); the button can be disabled or the request
+  skipped in that case.
+- The other triggers in the plan below (IMs from the owner, ambient mode) are post-MVP.
+
 ## Context
 The user wants the logged-in avatar driven by an LLM that can chat, "look around" and comment on
 the world and on other avatars, and (stretch) move around. Exploration showed the viewer already
@@ -120,8 +144,9 @@ Modules:
   - Fallback "no tools" mode for local models with weak tool calling: attach a fresh `look` when
     asked about appearance; plain-text replies only.
 - `agent.rs` — event loop:
-  - Triggers: chat that mentions the avatar's name (default), IM from the owner, optional
-    ambient mode (comment every N minutes when people are near).
+  - Triggers: the "give me my next line" button (MVP; chat that names the avatar may start the same
+    cycle), then later IM from the owner and optional ambient mode (comment every N minutes when
+    people are near).
   - Context: rolling transcript of nearby chat, nearby avatar names + distances, region name,
     persona prompt.
   - Tools for the model: `look_around()`, `look_at(avatar)`, `reply(text)` (→ `draftChat` into the chat the trigger came from: nearby or that IM session), `face(avatar)`, `gesture(name)`, and
@@ -142,9 +167,80 @@ Modules:
   settings can't be used to launch arbitrary programs.
 
 ### Notes for the user
-- Second Life policy requires accounts run by automation to be flagged as **Scripted Agents**;
-  using a dedicated bot account is recommended.
+- This is not a scripted agent (not a bot): it is a normal viewer driven by its user, who reviews
+  and sends every line. No Scripted Agent registration applies for now; revisit only if that changes
+  (for example if lines were ever sent without the user).
 - Snapshots of other residents go to the chosen provider; KoboldCPP keeps everything local.
+
+## Design refinements from an outside discussion (proposals, not decisions)
+Summary of a conversation with another assistant (2026-10-30), recorded for when we start work.
+Nothing here is built, and nothing here overrides the binding decisions at the top. The scenario
+that drove it: the avatar is in a hair shop, looks around on its own, identifies the styles on
+sale and picks the one it likes. It does not walk or buy; the user does that.
+
+**Core idea: an agent with senses, not a chatbot with pictures.** Don't hand the model every
+image and ask for a verdict (small local models do badly at that). Give it tools and run a loop:
+the helper sends the current observation plus the model's own notes, the model answers with one
+action, the helper carries it out and returns the result, and it repeats until the model chooses.
+KoboldCPP can run this with a vision-language model plus `--mmproj`; Qwen-VL and Gemma-family
+models were named as strong at reading text and locating things in images.
+
+**Proposed tools**, and how each maps onto the plan above:
+
+| Proposed | Meaning | Relation to this plan |
+|---|---|---|
+| `survey()` | the cube faces, labelled front/right/back/left (up/down usually skipped indoors) | our `look_around`; add the grid overlay below |
+| `look(direction, cell, zoom)` | close-up aimed at a grid cell on one face | new: generalises `look_at(avatar)` to an aimed camera (yaw/pitch/zoom) |
+| `identify(direction, cell)` | name and hovertext of the object under that cell | new viewer op: a pick/raycast through a cell; feasibility not yet checked |
+| `note(text)` | add to a scratchpad | helper-side only |
+| `say(text)` | local chat | must go through `draftChat`, never sent automatically (binding decision) |
+| `choose(candidate_id, why)` | final pick, handed to the user | helper-side; the user does any purchase |
+
+**Four details that make it work:**
+1. **Labelled cube faces, not a stitched panorama.** Six normal-perspective images are handled far
+   better than one distorted equirectangular image. About 512–768 px per face is enough for a survey.
+2. **Numbered grid overlay on every image** (set-of-mark prompting). Models are unreliable at pixel
+   coordinates but good at "front face, cell C4". The helper converts a cell to camera yaw/pitch for
+   the close-up, and the pick gives an exact handoff ("the vendor at back C4").
+3. **Use the world's own labels.** Objects have names and hovertext. A pick through the camera gives
+   the product name (for example "Brand Hair - Ivy (Fatpack)"), which combined with the text on the
+   vendor image turns "a brownish wavy one" into an actual product.
+4. **A scratchpad instead of a growing pile of images.** After each close-up the model writes a short
+   note (candidate id, place, description, reaction) and the image is dropped from context. Rule:
+   no `choose()` until at least three candidates are noted.
+
+**Self-determination.** The model has no stable tastes by itself; asked twice it may pick differently.
+To make taste coherent:
+- give the persona a few concrete aesthetic lines (colours it gravitates to, how it sees itself,
+  vibes it dislikes), not only a personality
+- have it explain each pick in its own words and store that in long-term memory, then feed those
+  memories back on later trips, so it can cite and build on past choices
+
+**One model or two.** Start with a single vision model as both eyes and mind. Splitting (a vision
+model describes, a separate chat persona decides) keeps an existing character voice but loses detail,
+because the persona never saw the item. Split only if the voice suffers.
+
+**Latency.** Each look-and-think cycle on local hardware may take several seconds, so a full shop
+browse may take minutes. Acceptable; have it draft an occasional remark so it doesn't seem frozen.
+
+**Memory and privacy.** Keep persistent memory scoped to the owner (and anyone they name), not to
+bystanders who don't know they're talking to an AI. Disclose the AI in the avatar's profile.
+
+**Points from that conversation we are not adopting:**
+- **Python bridge.** It offered one; helpers are Rust (binding decision).
+- **A headless bot (LibreMetaverse) and movement commands** (follow, sit, go to). We drive a real,
+  rendering viewer through LEAP, so we already have eyes and a camera, and navigation is out of scope.
+- **An in-world scripted relay** as a first step. It can't see or look around, so it doesn't serve this plan.
+
+**Claim in that conversation not verified:** that Linden Lab's Convai-based "Character Designer" AI
+characters were paused on 2025-09-01. It does not affect this plan. Its scripted-agent policy advice
+does not apply while a human sends every line (see "Notes for the user").
+
+**Open questions:**
+- Can the existing pick code return an object's name and hovertext for an arbitrary screen point or
+  ray, and is it reachable from LEAP (`captureCubeFaces` and an aimed camera are already planned)?
+- Which local vision models give good enough shop-vendor text reading at 512–768 px per face?
+- How should the scratchpad and long-term taste memory be stored (file per owner under the data folder)?
 
 ## Verification
 1. `cargo test`: LLSD binary-parse / notation-write round trips (including samples captured from
