@@ -133,6 +133,10 @@ class LLDir
     const std::string &getPerAccountChatLogsDir() const;    // Location of the per account chat logs dir.
     const std::string &getTempDir() const;          // Common temporary directory
     const std::string  getCacheDir(bool get_default = false) const; // Location of the cache.
+    // <FS:Luna Witch> getCacheDir() plus a per-instance sub-folder ("1", "2", ...); getCacheBaseDir() is without it
+    const std::string  getCacheBaseDir(bool get_default = false) const;
+    void               setInstanceCacheSubdir(const std::string& subdir);
+    // </FS:Luna Witch>
     const std::string &getOSCacheDir() const;       // location of OS-specific cache folder (may be empty string)
     const std::string &getCAFile() const;           // File containing TLS certificate authorities
     const std::string &getDirDelimiter() const; // directory separator for platform (ie. '\' or '/' or ':')
@@ -312,6 +316,7 @@ protected:
     std::string mCAFile;                 // Location of the TLS certificate authority PEM file.
     std::string mTempDir;
     std::string mCacheDir;          // cache directory as set by user preference
+    std::string mInstanceCacheSubdir; // <FS:Luna Witch/> per-instance cache sub-folder, empty if none
     std::string mDefaultCacheDir;   // default cache diretory
     std::string mOSCacheDir;        // operating system cache dir
     std::string mDirDelimiter;

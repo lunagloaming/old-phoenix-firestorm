@@ -82,14 +82,16 @@ S32 FSInstanceSlots::acquire(const std::string& cache_dir)
     mActiveInstanceCount = getActiveInstanceCount();
 
     LL_INFOS() << "Cache instance slot " << mSlot << " in " << mCacheDir << " ("
-               << (ownsSharedCache() ? "owns shared caches" : "shared caches are read-only") << "), "
+               << (mSlot >= 0 ? "own cache sub-folder " + std::to_string(mSlot + 1) : std::string("no free slot, shared cache is read-only")) << "), "
                << mActiveInstanceCount << " instance(s) running" << LL_ENDL;
     return mSlot;
 }
 
 std::string FSInstanceSlots::getSlotDirName(const std::string& base_name) const
 {
-    return mSlot > 0 ? llformat("%s_%d", base_name.c_str(), mSlot) : base_name;
+    // Each instance already has its own cache sub-folder, so the object cache needs no slot suffix there.
+    // Without a slot we share the base folder read-only, and then no suffix is needed either.
+    return base_name;
 }
 
 bool FSInstanceSlots::isSlotHeldByOther(S32 slot) const

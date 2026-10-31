@@ -384,7 +384,23 @@ const std::string &LLDir::getTempDir() const
     return mTempDir;
 }
 
+// <FS:Luna Witch> Each running viewer instance gets its own writable cache in a numbered sub-folder
 const std::string  LLDir::getCacheDir(bool get_default) const
+{
+    const std::string base = getCacheBaseDir(get_default);
+    return mInstanceCacheSubdir.empty() ? base : add(base, mInstanceCacheSubdir);
+}
+
+void LLDir::setInstanceCacheSubdir(const std::string& subdir)
+{
+    mInstanceCacheSubdir = subdir;
+    if (!subdir.empty())
+    {
+        LLFile::mkdir(getCacheDir());
+    }
+}
+
+const std::string  LLDir::getCacheBaseDir(bool get_default) const
 {
     if (mCacheDir.empty() || get_default)
     {

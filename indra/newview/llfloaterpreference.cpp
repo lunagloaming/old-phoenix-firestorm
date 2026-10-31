@@ -1796,7 +1796,7 @@ void LLFloaterPreference::changeCachePath(const std::vector<std::string>& filena
     }
     else
     {
-        std::string cache_location = gDirUtilp->getCacheDir();
+        std::string cache_location = gDirUtilp->getCacheBaseDir();
         gSavedSettings.setString("CacheLocation", cache_location);
         std::string top_folder(gDirUtilp->getBaseFileName(cache_location));
         gSavedSettings.setString("CacheLocationTopFolder", top_folder);
@@ -1821,7 +1821,7 @@ void LLFloaterPreference::onClickBrowseChatLogDir()
 }
 void LLFloaterPreference::onClickResetCache()
 {
-    if (gDirUtilp->getCacheDir(false) == gDirUtilp->getCacheDir(true))
+    if (gDirUtilp->getCacheBaseDir(false) == gDirUtilp->getCacheBaseDir(true))
     {
         // The cache location was already the default.
         return;
@@ -1829,7 +1829,7 @@ void LLFloaterPreference::onClickResetCache()
     gSavedSettings.setString("NewCacheLocation", "");
     gSavedSettings.setString("NewCacheLocationTopFolder", "");
     LLNotificationsUtil::add("CacheWillBeMoved");
-    std::string cache_location = gDirUtilp->getCacheDir(false);
+    std::string cache_location = gDirUtilp->getCacheBaseDir(false);
     gSavedSettings.setString("CacheLocation", cache_location);
     std::string top_folder(gDirUtilp->getBaseFileName(cache_location));
     gSavedSettings.setString("CacheLocationTopFolder", top_folder);
