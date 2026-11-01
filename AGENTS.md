@@ -131,12 +131,12 @@ from the defaults, but that includes autodetected and session state.
 ## Changes so far (branch `companion-rebrand`; work now continues on `dev`)
 | Commit | Summary |
 |---|---|
-| `fb215341` | Rebrand to Companion Viewer: names, channel, packaging, English-only UI, Firestorm links/services hidden, new artwork, bundled login page |
-| `e60685d0` | macOS 12 deprecation fixes for Xcode 27 |
-| `2a0b2c12` | Package only English emoji names |
-| `4e122384` | Bundled login page loaded as `file://` URL; default channel `CompanionViewer` |
-| `5cf7cb42` | Ocean-blue, higher-contrast color scheme replacing Firestorm orange |
-| `34b937c0` | MOTD and first-run Welcome Pack disabled; `_x64` removed from the user-facing app name |
+| `8ea1432c` | Rebrand to Companion Viewer: names, channel, packaging, English-only UI, Firestorm links/services hidden, new artwork, bundled login page |
+| `9ad871dc` | macOS 12 deprecation fixes for Xcode 27 |
+| `ac048202` | Package only English emoji names |
+| `15edb188` | Bundled login page loaded as `file://` URL; default channel `CompanionViewer` |
+| `91b88d32` | Ocean-blue, higher-contrast color scheme replacing Firestorm orange |
+| `ef47ef0d` | MOTD and first-run Welcome Pack disabled; `_x64` removed from the user-facing app name |
 
 Details worth knowing:
 - **Artwork:** the source icon is `doc/companionviewer_icon.png`. App icons, installer art, the

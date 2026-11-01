@@ -1,7 +1,7 @@
 # Companion Agent: connect a local LLM (KoboldCPP or Ollama) to the avatar
 
 **Status (2026-10-30):** planned, not started. Repo `<repo>`, branch
-`companion-rebrand` (last commit `34b937c0`). No code for this plan has been written yet.
+`companion-rebrand` (last commit `ef47ef0d`). No code for this plan has been written yet.
 
 ## User decisions (binding — don't re-litigate)
 - **Helper language: Rust.** The user can't stand Python; don't propose Python for helpers or
