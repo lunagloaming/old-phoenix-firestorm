@@ -166,12 +166,15 @@ Every alert in Preferences > Notifications > Alerts also starts hidden (unchecke
 is set in `LLNotificationForm` (`indra/llui/llnotifications.cpp`), not in a settings file; the
 user's choices are saved in `user_settings/ignorable_dialogs.xml`.
 
-Two other places hold defaults that `settings.xml` does not:
+Other places that hold defaults `settings.xml` does not:
 - The viewer-mode file. A new install uses `app_settings/settings_firestorm.xml`, whose values
   replace the `settings.xml` defaults ("The session file turns into the new defaults" in
   `llappviewer.cpp`). `LetterKeysAffectsMovementNotFocusChatBar` is set to 1 there for this reason.
 - `app_settings/key_bindings.xml`. Double-click on land to teleport is the `Double LMB` →
   `teleport_to` binding in `third_person`; `DoubleClickTeleport` alone doesn't turn it on.
+- `skins/default/toolbars.xml`. The default toolbar layout is the tester's: icons on the right
+  edge only, bottom and left toolbars empty. Each account saves its own copy in its per-account
+  folder, so this only affects accounts that haven't customised theirs.
 
 ## Changes so far (the rebrand commits at the start of `dev`)
 | Commit | Summary |
