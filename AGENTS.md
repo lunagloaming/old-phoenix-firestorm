@@ -141,6 +141,23 @@ and radar options, RLVa on, ...) are the shipped defaults in `app_settings/setti
 don't copy those from a used profile. A used profile's `settings.xml` lists only values that differ
 from the defaults, but that includes autodetected and session state.
 
+Radar (owner's decision): the only report on by default is someone entering chat range
+(`RadarReportChatRangeEnter`), with its sound (`PlayModeUISndRadarChatEnter`). Every other radar
+report and radar sound, the avatar age alert included, stays off.
+
+Volumes (owner's decision): Master, UI, Media and Music are at 1.0 and enabled. Sounds, Ambient
+and Voice are at 0 and muted (`MuteSounds`, `MuteAmbient`, `MuteVoice`). The typing sound is off
+(`PlayModeUISndTyping` 0). The microphone level (`AudioLevelMic`, "My volume") is 0 for
+privacy, and voice chat itself is disabled (`EnableVoiceChat` 0).
+
+Maturity (owner's decision): everything is included. `PreferredMaturity` and
+`FSSearchGroupMaturity` are 42 (Adult), and every `ShowPG*`, `ShowMature*` and `ShowAdult*` search
+filter is on. Preferences clamps these down for accounts that can't access Mature or Adult.
+
+Left at the upstream defaults on purpose (the tester's old profile differed): `ShowNewInventory`
+on, `ForceShowGrid` off, `QAMode` off, and no frame-rate preset (`FramePerSecondLimit` stays as
+shipped; frame-rate tuning is left to autodetection like other hardware settings).
+
 Every alert in Preferences > Notifications > Alerts also starts hidden (unchecked). That default
 is set in `LLNotificationForm` (`indra/llui/llnotifications.cpp`), not in a settings file; the
 user's choices are saved in `user_settings/ignorable_dialogs.xml`.
@@ -203,14 +220,7 @@ Details worth knowing:
   Linux (COSMIC on Wayland, 2026-10-31; that run used an XWayland workaround that isn't committed).
 - **Decision pending (owner): more new-install defaults.** These preferences from the tester's old
   profile (`~/.firestorm_multibox`) are not defaults yet; the owner will say which to take:
-  - Radar: report leaving chat range, and entering/leaving draw distance and the region, each with
-    its sound (`RadarReportChatRangeLeave`, `RadarReport{Draw,Sim}Range{Enter,Leave}`,
-    `PlayModeUISndRadar{ChatLeave,DrawEnter,DrawLeave,SimEnter,SimLeave}` = 1).
-  - Sound: `AudioLevelUI` 0.1 (default 0.5); `PlayModeUISndTyping` 0.
-  - Maturity: `PreferredMaturity` 42 (Adult), `ShowAdultSims` 1, `ShowMatureLand` 0,
-    `ShowMatureClassifieds` 0.
-  - Other: `ShowNewInventory` 0, `HeightUnits` 0, `LSLFindCaseInsensitivity` 1, `ForceShowGrid` 1,
-    `QAMode` 1, `FramePerSecondLimit` 20.
+  - Other: `HeightUnits` 0 (feet), `LSLFindCaseInsensitivity` 1.
   - Per account: the custom `DoNotDisturbModeResponse` (same text on all 12 accounts).
 
 ## Next feature: LLM companion agent (planned, not started)

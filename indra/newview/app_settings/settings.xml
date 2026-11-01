@@ -648,7 +648,7 @@
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>1</integer>
+      <integer>0</integer>
     </map>
     
    <key>RadarAvatarAgeAlertValue</key>
@@ -1925,7 +1925,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>0.5</real>
+      <real>0.0</real>
     </map>
     <key>AudioLevelMaster</key>
     <map>
@@ -1958,7 +1958,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>1.0</real>
+      <real>0.0</real>
     </map>
     <key>AudioLevelMusic</key>
     <map>
@@ -1980,7 +1980,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>0.5</real>
+      <real>0.0</real>
     </map>
     <key>AudioLevelUI</key>
     <map>
@@ -1991,7 +1991,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>0.5</real>
+      <real>1.0</real>
     </map>
     <key>AudioLevelVoice</key>
     <map>
@@ -2002,7 +2002,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>0.7</real>
+      <real>0.0</real>
     </map>
     <key>AudioLevelWind</key>
     <map>
@@ -10170,7 +10170,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-	  <integer>13</integer>
+	  <integer>42</integer>
     </map>
   <key>PreviewRenderSize</key>  
   <map>
@@ -15060,7 +15060,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>1</integer>
     </map>
 	<key>FSSearchGroupMaturity</key>
     <map>
@@ -15073,7 +15073,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-	  <integer>13</integer>
+	  <integer>42</integer>
     </map>
     <key>ShowPGEvents</key>
     <map>
@@ -15112,7 +15112,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>1</integer>
     </map>
     <key>ShowPGLand</key>
     <map>
@@ -15151,7 +15151,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>1</integer>
     </map>
     <key>ShowPGClassifieds</key>
     <map>
@@ -15190,7 +15190,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>1</integer>
     </map>
     <key>ShowPGSims</key>
     <map>
@@ -15229,7 +15229,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>1</integer>
     </map>
     <key>ShowNearClip</key>
     <map>
@@ -23179,7 +23179,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>1</integer>
+      <integer>0</integer>
     </map>
     <key>PlayModeUISndWindowClose</key>
     <map>
@@ -23479,7 +23479,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>1</integer>
+      <integer>0</integer>
     </map>
     <key>UISndRadarAgeAlert</key>
     <map>
