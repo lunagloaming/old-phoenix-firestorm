@@ -6,7 +6,9 @@ Notes for coding agents (and humans) resuming work on this repo from any machine
 Companion Viewer is a fork of the Firestorm Second Life viewer (tag
 `Firestorm_Release_7.2.5.81788`), rebranded as **"Companion Viewer"** (display name) /
 **`CompanionViewer`** (files, channel, folders, binaries). It is not affiliated with or supported
-by the Firestorm project. Rebrand work is on branch **`companion-rebrand`** (base: `main`); ongoing work is on **`dev`**, which also carries the multibox-memory port.
+by the Firestorm project. All work is on **`dev`** (base: `master`, the upstream Firestorm
+mirror), including the rebrand and the multibox-memory port. The old `companion-rebrand` branch is
+gone; its commits are the start of `dev`.
 
 ## Owner preferences
 - **No Python for new code.** Helpers, plugins and tooling we add are written in **Rust** (or in the
@@ -156,7 +158,9 @@ filter is on. Preferences clamps these down for accounts that can't access Matur
 
 Left at the upstream defaults on purpose (the tester's old profile differed): `ShowNewInventory`
 on, `ForceShowGrid` off, `QAMode` off, and no frame-rate preset (`FramePerSecondLimit` stays as
-shipped; frame-rate tuning is left to autodetection like other hardware settings).
+shipped; frame-rate tuning is left to autodetection like other hardware settings), height in
+metres (`HeightUnits` 1), case-sensitive script search (`LSLFindCaseInsensitivity` 0), and the stock
+Do Not Disturb response (`DoNotDisturbModeResponse`).
 
 Every alert in Preferences > Notifications > Alerts also starts hidden (unchecked). That default
 is set in `LLNotificationForm` (`indra/llui/llnotifications.cpp`), not in a settings file; the
@@ -169,7 +173,7 @@ Two other places hold defaults that `settings.xml` does not:
 - `app_settings/key_bindings.xml`. Double-click on land to teleport is the `Double LMB` →
   `teleport_to` binding in `third_person`; `DoubleClickTeleport` alone doesn't turn it on.
 
-## Changes so far (branch `companion-rebrand`; work now continues on `dev`)
+## Changes so far (the rebrand commits at the start of `dev`)
 | Commit | Summary |
 |---|---|
 | `8ea1432c` | Rebrand to Companion Viewer: names, channel, packaging, English-only UI, Firestorm links/services hidden, new artwork, bundled login page |
@@ -218,10 +222,6 @@ Details worth knowing:
 - In-world screens haven't been reviewed in the new color scheme yet.
 - Only the macOS build has been exercised in-world. The Linux build runs and logs in on
   Linux (COSMIC on Wayland, 2026-10-31; that run used an XWayland workaround that isn't committed).
-- **Decision pending (owner): more new-install defaults.** These preferences from the tester's old
-  profile (`~/.firestorm_multibox`) are not defaults yet; the owner will say which to take:
-  - Other: `HeightUnits` 0 (feet), `LSLFindCaseInsensitivity` 1.
-  - Per account: the custom `DoNotDisturbModeResponse` (same text on all 12 accounts).
 
 ## Next feature: LLM companion agent (planned, not started)
 Full plan: [`doc/companion-agent-plan.md`](doc/companion-agent-plan.md). Summary:
