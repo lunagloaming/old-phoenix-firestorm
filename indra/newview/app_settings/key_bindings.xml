@@ -91,6 +91,9 @@
     <binding key="" mask="NONE" mouse="MMB" command="toggle_voice"/>
 
     <binding key="" mask="NONE" mouse="LMB" command="script_trigger_lbutton"/>
+
+    <!-- Companion Viewer: double-click on land teleports there by default -->
+    <binding key="" mask="NONE" mouse="Double LMB" command="teleport_to"/>
   </third_person>
   <sitting>
     <binding key="A" mask="ALT" command="spin_around_cw"/>
