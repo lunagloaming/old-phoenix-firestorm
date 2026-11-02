@@ -219,10 +219,16 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
     // This needs to be set as early as possible
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, LLVersionInfo::getInstance()->getChannel().c_str());
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, LLVersionInfo::getInstance()->getVersion().c_str());
-    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "com.secondlife.indra.viewer");
-    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, "The Phoenix Firestorm Project, Inc.");
+    // Companion Viewer: our own identifier and creator, no Firestorm URL. The identifier is the
+    // window class / Wayland app id that desktop entries match (StartupWMClass), so it also keeps
+    // this viewer apart from Firestorm and the Linden viewer in the taskbar. The copyright line is
+    // attribution and stays.
+    //SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "com.secondlife.indra.viewer");
+    //SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, "The Phoenix Firestorm Project, Inc.");
+    //SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://www.firestormviewer.org/");
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "io.github.lunagloaming.CompanionViewer");
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, "Companion Viewer");
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Copyright (c) 2025, The Phoenix Firestorm Project, Inc.");
-    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://www.firestormviewer.org/");
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game");
 
     bool ok = gViewerAppPtr->init();

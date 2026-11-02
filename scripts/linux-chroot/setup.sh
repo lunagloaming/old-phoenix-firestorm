@@ -45,6 +45,11 @@ $APT install build-essential gcc-14 g++-14 cmake ninja-build git curl wget unzip
     python3 python3-pip python3-venv python-is-python3 mesa-common-dev libgl1-mesa-dev \
     libglu1-mesa-dev libfontconfig1-dev libfreetype-dev libssl-dev libpulse-dev \
     libxinerama-dev libxrandr-dev
+# Companion Viewer: the rest of the upstream CI package list (.github/workflows/build.yaml).
+# Viewer 7.3 builds the VLC, GStreamer, PipeWire and Wayland parts against system libraries.
+$APT install pkg-config libosmesa6-dev libxcursor-dev libxfixes-dev libxft-dev libunwind-dev \
+    libpipewire-0.3-dev libdbus-1-dev libglib2.0-dev libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev libvlc-dev libwayland-dev libfreetype6-dev
 python3 -m venv /opt/autobuild
 /opt/autobuild/bin/pip install autobuild=='$AUTOBUILD_VERSION' llsd=='$LLSD_VERSION'
 '

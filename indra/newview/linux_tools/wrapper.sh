@@ -33,7 +33,9 @@ cd "${RUN_PATH}"
 ./etc/register_secondlifeprotocol.sh
 
 # Re-register the application with the desktop system every launch, for now.
-./etc/refresh_desktop_app_entry.sh
+# Companion Viewer: not on every launch, where it added a second menu entry beside launchers set
+# up by hand (e.g. one per install). install.sh still runs it once, at install time.
+#./etc/refresh_desktop_app_entry.sh
 
 ## Before we mess with LD_LIBRARY_PATH, save the old one to restore for
 ##  subprocesses that care.

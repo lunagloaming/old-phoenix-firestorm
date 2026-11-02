@@ -78,8 +78,9 @@ viewer. These changes get the practical benefits across separate processes inste
 **Not taken from the original branch:** its launcher scripts, which started differently tuned
 instances with session-only `--set` overrides, and the login-screen notice (`FSMultiBoxProfile`)
 that named the tuning profile in use. Companion Viewer has no per-role profiles; every instance runs
-with the same defaults. The Linux wrapper still honours `FS_JEMALLOC_LIB` (use another jemalloc, e.g. one built with heap profiling) and
-a caller's `__GL_THREADED_OPTIMIZATIONS`.
+with the same defaults. The Linux wrapper still honours `FS_JEMALLOC_LIB` (use another jemalloc, e.g. one built with heap
+profiling). Since the 7.3 rebase it no longer sets `__GL_THREADED_OPTIMIZATIONS`, so a caller's value
+applies and the driver default (off) otherwise.
 
 ## Settings
 
@@ -223,9 +224,9 @@ starting cache before each run, use the same region and duration, and note crowd
   `MALLOC_CONF` for snapshots), read with
   `jeprof --text --show_bytes [--cum --focus=<fn>] <binary> <snapshot>`. Heap profiles count
   allocated bytes, not resident pages, so always cross-check against RSS.
-- NVIDIA's threaded optimisation (on by default in the wrapper) makes the driver allocate on its own
-  threads, which hides callers. Run with `__GL_THREADED_OPTIMIZATIONS=0` to attribute driver
-  allocations.
+- NVIDIA's threaded optimisation makes the driver allocate on its own threads, which hides callers.
+  The wrapper turned it on before the 7.3 rebase (the measurements here were taken that way); it is
+  now off unless set, so `__GL_THREADED_OPTIMIZATIONS=0` is only needed for older builds.
 - Standalone GL experiments (a small C program with a headless EGL or GLX context, plus
   `/proc/self/status` and jemalloc's `thread.allocatedp`/`thread.deallocatedp`) are much faster than
   viewer runs for driver questions.

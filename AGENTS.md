@@ -3,12 +3,12 @@
 Notes for coding agents (and humans) resuming work on this repo from any machine.
 
 ## What this is
-Companion Viewer is a fork of the Firestorm Second Life viewer (tag
-`Firestorm_Release_7.2.5.81788`), rebranded as **"Companion Viewer"** (display name) /
-**`CompanionViewer`** (files, channel, folders, binaries). It is not affiliated with or supported
-by the Firestorm project. All work is on **`dev`** (base: `master`, the upstream Firestorm
-mirror), including the rebrand and the multibox-memory port. The old `companion-rebrand` branch is
-gone; its commits are the start of `dev`.
+Companion Viewer is a fork of the Firestorm Second Life viewer, rebranded as **"Companion Viewer"**
+(display name) / **`CompanionViewer`** (files, channel, folders, binaries). It is not affiliated
+with or supported by the Firestorm project. All work is on **`dev`**, including the rebrand and the
+multibox-memory port, as a linear series of commits on top of upstream Firestorm `master`. The fork
+started from tag `Firestorm_Release_7.2.5.81788`; since 2026-11-02 it is rebased on upstream
+`master` at `f9401764` (Firestorm 7.3.0, Second Life viewer 26.4). See "Updating from upstream".
 
 ## Owner preferences
 - **No Python for new code.** Helpers, plugins and tooling we add are written in **Rust** (or in the
@@ -72,13 +72,17 @@ rootless Ubuntu 24.04 chroot.
 
 1. **Chroot:** `.chroot/` (about 1.8 GB, ignored via `.git/info/exclude`). Create it with
    `scripts/linux-chroot/setup.sh` (downloads the Ubuntu 24.04 base image, adds GCC 14 from the
-   `ubuntu-toolchain-r/test` PPA, cmake, ninja, the GL/X11/pulse dev packages, and a venv at
+   `ubuntu-toolchain-r/test` PPA, cmake, ninja, the dev packages from upstream's CI list (GL, X11,
+   Wayland, PulseAudio, PipeWire, GStreamer, VLC, dbus, ...), and a venv at
    `/opt/autobuild` with autobuild 3.10.2 and llsd 1.2.4; a few minutes, needs a `/etc/subuid`
    range). It also installs `.chroot/enter [cmd]`, which runs a command in the chroot as your own
    user (root inside maps to you); the repo and `../fs-build-variables` (read-only) are mounted at
    their own paths. Tested from scratch: a clean chroot reports g++-14 14.3, cmake 3.28.3, ninja
-   1.11.1, autobuild 3.10.2, and a full viewer build in it succeeds (2026-10-31, see step 2). `../fs-build-variables`
-   must be cloned first (see the macOS section, step 1; the Xcode deployment-target edit is macOS-only).
+   1.11.1, autobuild 3.10.2, and a full viewer build in it succeeds (2026-10-31, see step 2).
+   Viewer 7.3 needs system VLC, GStreamer, PipeWire and Wayland libraries (configure stops at
+   `libvlc` without them); on 2026-11-02 they were installed into an existing chroot by hand, so
+   the updated `setup.sh` list hasn't been run from scratch yet. `../fs-build-variables` must be
+   cloned first (see the macOS section, step 1; the Xcode deployment-target edit is macOS-only).
 2. **Build:**
    ```sh
    .chroot/enter bash -c 'autobuild configure -A 64 -c ReleaseFS_open -- --ninja --jobs 14 --chan=Alpha -DLL_TESTS:BOOL=FALSE &&
@@ -102,6 +106,12 @@ rootless Ubuntu 24.04 chroot.
    **A chroot can be copied** instead of recreated: `.chroot/enter` finds the repo from its own
    location. Copy it inside a user namespace so the subuid-owned files come along:
    `unshare --map-auto --map-root-user cp -a --reflink=auto <other-clone>/.chroot .chroot`.
+   This works for a `git worktree` too: `enter` also mounts the main clone's `.git`, so the build
+   number is counted there. Copy `scripts/linux-chroot/enter` over `.chroot/enter` in chroots made
+   before 2026-11-02.
+
+   **Rebased build (2026-11-02):** a clean `--no-package` build of the 7.3.0 rebase took about
+   13 min (configure and downloads included, 1448 ninja steps), 0 errors, 0 warnings.
 
    **Measured full build (2026-10-31, clean checkout and fresh chroot):** 15 min 19 s wall clock for
    the command above (configure, library downloads and the ~70 s CMake step included; 1358 ninja
@@ -131,7 +141,11 @@ rootless Ubuntu 24.04 chroot.
    chmod 755 ~/.local/opt/companionviewer-alpha/bin/{dullahan_host,chrome-sandbox,SLVoice}
    ```
    Check no viewer is running before the rsync. The launcher is
-   `~/.local/share/applications/companionviewer-alpha.desktop` (outside the repo).
+   `~/.local/share/applications/companionviewer-alpha.desktop` (outside the repo). Its
+   `StartupWMClass` must be `io.github.lunagloaming.CompanionViewer`, the SDL3 app id the viewer sets
+   (`llappviewerlinux.cpp`); before 7.3 it was `do-not-directly-run-companionviewer-bin`. The
+   `companionviewer` start script no longer installs a desktop entry on every start (upstream 7.3
+   did); `install.sh` still does, once. It still registers the `secondlife://` handler every start.
 4. **User data:** `~/.companionviewer` (override: `COMPANIONVIEWER_USER_DIR`). Log:
    `~/.companionviewer/logs/CompanionViewer.log`.
 
@@ -150,7 +164,8 @@ macOS notes): [`doc/multibox-memory.md`](doc/multibox-memory.md).
   `settings.xml` on exit.
 - **Memory:** bake-mask textures are not uploaded; vertex-buffer CPU copies are freed after 10 s
   (`FSVBOReleaseStagingSecs`); uploads go through a staging buffer (`FSVBOGPUCopyUpload`); freed
-  heap pages return at once (`FSHeapDecayMs`); flexi prims, colour changes and scripted
+  heap pages return at once (`FSHeapDecayMs`, needs jemalloc: the Linux launcher preloads the
+  bundled one again, which upstream 7.3's wrapper had stopped doing); flexi prims, colour changes and scripted
   hide/show no longer rebuild whole attachments (`FSOctreeBridgeMoveSlack`,
   `FSInPlaceColorUpdates`); `FSVBOAllocTrace` is a debug trace.
 - No launcher scripts or per-role profiles: the goal is one well-behaved cooperative viewer. To tell one instance
@@ -200,23 +215,26 @@ Other places that hold defaults `settings.xml` does not:
   edge only, bottom and left toolbars empty. Each account saves its own copy in its per-account
   folder, so this only affects accounts that haven't customised theirs.
 
-## Changes so far (the rebrand commits at the start of `dev`)
+## Changes so far (the rebrand commits at the start of `dev`, hashes after the 2026-11-02 rebase)
 | Commit | Summary |
 |---|---|
-| `8ea1432c` | Rebrand to Companion Viewer: names, channel, packaging, English-only UI, Firestorm links/services hidden, new artwork, bundled login page |
-| `9ad871dc` | macOS 12 deprecation fixes for Xcode 27 |
-| `ac048202` | Package only English emoji names |
-| `15edb188` | Bundled login page loaded as `file://` URL; default channel `CompanionViewer` |
-| `91b88d32` | Ocean-blue, higher-contrast color scheme replacing Firestorm orange |
-| `ef47ef0d` | MOTD and first-run Welcome Pack disabled; `_x64` removed from the user-facing app name |
+| `810b2a69` | Rebrand to Companion Viewer: names, channel, packaging, English-only UI, Firestorm links/services hidden, new artwork, bundled login page |
+| `3d65bfb7` | Package only English emoji names |
+| `c970dd44` | Bundled login page loaded as `file://` URL; default channel `CompanionViewer` |
+| `1ae6f677` | Ocean-blue, higher-contrast color scheme replacing Firestorm orange |
+| `77174458` | MOTD and first-run Welcome Pack disabled; `_x64` removed from the user-facing app name |
 
 Details worth knowing:
 - **Artwork:** the source icon is `doc/companionviewer_icon.png`. App icons, installer art, the
   login logo and the Quick Prefs toolbar icon are generated from it (existing `firestorm_*`
   filenames kept).
 - **Hidden Firestorm entry points:** Help-menu community links, "Message of the day" menu item,
-  Guidebook, Report Problem, F1 and floater "?" help (`HelpURLFormat` empty, `FSHideHelpButtons`=1),
-  FIRE- Jira auto-links, Windows AVX2 download prompts.
+  Report Problem, F1 and floater "?" help (`HelpURLFormat` empty, `FSHideHelpButtons`=1),
+  FIRE- Jira auto-links, Windows AVX2 download prompts. (Upstream 7.3 removed the Guidebook entries we
+  had hidden.)
+- **Linux app identity:** SDL3 app id `io.github.lunagloaming.CompanionViewer` and creator
+  "Companion Viewer", no Firestorm URL (`llappviewerlinux.cpp`); the copyright line stays as
+  attribution. The desktop-entry scripts in `linux_tools/` use the same `StartupWMClass`.
 - **Login screen:** a self-contained page (black, centred logo, "Companion Viewer" in Syncopate) at
   `indra/newview/skins/default/html/en-us/login/index.html`. `FSPanelLogin` uses it whenever the
   grid's login page is a Firestorm-hosted URL, and loads it as an escaped `file://` URL (a bare
@@ -248,14 +266,48 @@ Details worth knowing:
   Nothing migrates the old `_x64` folders. The OS cache folder name on macOS/Windows (`lldir.cpp`,
   `lldir_mac.cpp`) still has `_x64`.
 
+## Updating from upstream
+`upstream` is FirestormViewer's repository (`git remote add upstream
+https://github.com/FirestormViewer/phoenix-firestorm.git`); `origin/master` is only a mirror and can
+lag behind it. We rebase, so `dev` stays a readable series of our own commits:
+1. Make a worktree on a test branch (`git worktree add ../CompanionViewer-merge -b merge-test dev`)
+   and copy the chroot into it (see "A chroot can be copied"), so `dev`, its build folder and the
+   installed viewer are untouched.
+2. `git fetch upstream && git -c merge.conflictStyle=diff3 rebase upstream/master`. Recurring
+   resolutions: non-English XUI/HTML/installer files that upstream changed are deleted again
+   (`git rm`), and so are non-English files upstream added; a commit whose change upstream has made
+   itself ends up empty and is skipped. In conflicts, HEAD is upstream and the other side is ours.
+3. Build in the worktree with its own channel (e.g. `--chan=Merge`), install it to its own folder and
+   run it with its own `COMPANIONVIEWER_USER_DIR`.
+4. When it holds up, point `dev` at the test branch. That rewrites `dev`, so it needs a force-push;
+   ask first. Update the commit hashes in this file afterwards.
+
+What the 7.3.0 rebase (2026-11-02) changed for us, beyond conflict resolution:
+- Dropped as redundant: our macOS Xcode 27 fixes (upstream did the same) and the Linux file-chooser
+  fix (Linux now uses SDL3 file dialogs instead of FLTK).
+- Upstream rewrote the Linux start script (`linux_tools/wrapper.sh`). It no longer preloads jemalloc
+  (still bundled), which `FSHeapDecayMs` and the memory measurements rely on, so we preload it
+  again (with the `FS_JEMALLOC_LIB` override). It no longer sets `__GL_THREADED_OPTIMIZATIONS=1`, so
+  NVIDIA's threaded optimisations are off unless the caller sets them.
+- Upstream names Linux threads itself but cuts names at 15 characters; ours runs after it and keeps a
+  pool worker's `:i/n` suffix.
+- `LLFileSystem::write` was rewritten for non-ASCII paths; the write-to-temporary-then-rename change
+  for shared caches was re-applied to it.
+
 ## Open items
 - **We need our own MOTD source** before turning `FSData::MOTD_ENABLED` back on. Don't point it
   at Firestorm servers again.
 - Background data feeds (grid list, grid status, fsdata) still use Firestorm servers;
-  `defaults.7.2.5.xml` from phoenixviewer.com returns 403 to this viewer.
+  the versioned defaults file (`defaults.7.2.5.xml` before the rebase) from phoenixviewer.com
+  returned 403 to this viewer.
 - In-world screens haven't been reviewed in the new color scheme yet.
-- Only the macOS build has been exercised in-world. The Linux build runs and logs in on
-  Linux (COSMIC on Wayland, 2026-10-31; that run used an XWayland workaround that isn't committed).
+- Only the macOS build has been exercised in-world, and only before the 7.3 rebase; the rebase
+  hasn't been built on macOS (upstream made its own Xcode 27 fixes, so our `9ad871dc` was dropped).
+  The 7.2.5-based Linux build ran and logged in on COSMIC (Wayland, 2026-10-31) with an XWayland
+  workaround that was never committed; the 7.3 build uses SDL3 and hasn't been run yet.
+- **Linux crash reporter (new in 7.3):** its dialog still says "Send a crash report to Firestorm via
+  BugSplat" and links Firestorm's privacy policy. It only runs in builds with a BugSplat database
+  (`BUGSPLAT_DB`); ours have none. Rebrand it, or keep it off, before any build sets one.
 
 ## Next feature: LLM companion agent (planned, not started)
 Full plan: [`doc/companion-agent-plan.md`](doc/companion-agent-plan.md). Summary:
