@@ -147,7 +147,10 @@ macOS notes): [`doc/multibox-memory.md`](doc/multibox-memory.md).
   base folder, read-only.
 - **Instance-aware defaults:** the texture GPU budget and image-decode threads are divided by the
   number of running instances. A second instance sharing the user directory does not overwrite
-  `settings.xml` on exit.
+  `settings.xml` on exit, and doesn't set or act on the GL-init crash flag (`RenderInitError`)
+  either: instances starting together read each other's flag, showed "crashed while initializing
+  graphics drivers", dropped to Low and saved Low for everyone (found on the 7.3-based `merge-test`
+  branch 2026-11-02, back-ported).
 - **Memory:** bake-mask textures are not uploaded; vertex-buffer CPU copies are freed after 10 s
   (`FSVBOReleaseStagingSecs`); uploads go through a staging buffer (`FSVBOGPUCopyUpload`); freed
   heap pages return at once (`FSHeapDecayMs`); flexi prims, colour changes and scripted
