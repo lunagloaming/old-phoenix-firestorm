@@ -402,7 +402,8 @@ void init_audio()
     if (!mute_audio && false == gSavedSettings.getBOOL("NoPreload"))
     {
         gAudiop->preloadSound(LLUUID(gSavedSettings.getString("UISndAlert")));
-        gAudiop->preloadSound(LLUUID(gSavedSettings.getString("UISndBadKeystroke")));
+        // Companion Viewer: never played, so not preloaded.
+        //gAudiop->preloadSound(LLUUID(gSavedSettings.getString("UISndBadKeystroke")));
         //gAudiop->preloadSound(LLUUID(gSavedSettings.getString("UISndChatFromObject")));
         gAudiop->preloadSound(LLUUID(gSavedSettings.getString("UISndClick")));
         gAudiop->preloadSound(LLUUID(gSavedSettings.getString("UISndClickRelease")));

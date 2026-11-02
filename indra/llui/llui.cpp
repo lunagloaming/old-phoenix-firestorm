@@ -469,7 +469,8 @@ void LLUI::clearPopups()
 
 void LLUI::reportBadKeystroke()
 {
-    make_ui_sound("UISndBadKeystroke");
+    // Companion Viewer: rejected keystrokes in text and number boxes are silent.
+    // make_ui_sound("UISndBadKeystroke");
 }
 
 // spawn_x and spawn_y are top left corner of view in screen GL coordinates
