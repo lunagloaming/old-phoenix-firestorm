@@ -5,10 +5,17 @@ Notes for coding agents (and humans) resuming work on this repo from any machine
 ## What this is
 Companion Viewer is a fork of the Firestorm Second Life viewer, rebranded as **"Companion Viewer"**
 (display name) / **`CompanionViewer`** (files, channel, folders, binaries). It is not affiliated
-with or supported by the Firestorm project. All work is on **`dev`**, including the rebrand and the
-multibox-memory port, as a linear series of commits on top of upstream Firestorm `master`. The fork
-started from tag `Firestorm_Release_7.2.5.81788`; since 2026-11-02 it is rebased on upstream
-`master` at `f9401764` (Firestorm 7.3.0, Second Life viewer 26.4). See "Updating from upstream".
+with or supported by the Firestorm project. Our work (the rebrand, the multibox-memory port, ...)
+is a linear series of commits kept on two branches (owner's decision, 2026-11-02):
+- **`dev`**: on the last official Firestorm release, now tag `Firestorm_Release_7.2.5.81788`. It
+  moves only when Firestorm tags a new `Firestorm_Release_*`.
+- **`merge-test`**: the same commits rebased on upstream Firestorm `master`, effectively a nightly;
+  now `f9401764` (Firestorm 7.3.0, Second Life viewer 26.4). Worked on in the worktree
+  `../CompanionViewer-merge`, built with `--chan=Merge`.
+
+New work normally lands on `dev` and is carried over at the next `merge-test` rebase; fixes for
+things only `merge-test` has land there. See "Updating from upstream". This file describes
+`merge-test`; the 7.2.5 differences are noted where they matter.
 
 ## Owner preferences
 - **No Python for new code.** Helpers, plugins and tooling we add are written in **Rust** (or in the
@@ -161,7 +168,9 @@ macOS notes): [`doc/multibox-memory.md`](doc/multibox-memory.md).
   base folder, read-only.
 - **Instance-aware defaults:** the texture GPU budget and image-decode threads are divided by the
   number of running instances. A second instance sharing the user directory does not overwrite
-  `settings.xml` on exit.
+  `settings.xml` on exit, and doesn't set or act on the GL-init crash flag (`RenderInitError`)
+  either: instances starting together read each other's flag, showed "crashed while initializing
+  graphics drivers", dropped to Low and saved Low for everyone (fixed on `merge-test` 2026-11-02).
 - **Memory:** bake-mask textures are not uploaded; vertex-buffer CPU copies are freed after 10 s
   (`FSVBOReleaseStagingSecs`); uploads go through a staging buffer (`FSVBOGPUCopyUpload`); freed
   heap pages return at once (`FSHeapDecayMs`, needs jemalloc: the Linux launcher preloads the
@@ -215,7 +224,11 @@ Other places that hold defaults `settings.xml` does not:
   edge only, bottom and left toolbars empty. Each account saves its own copy in its per-account
   folder, so this only affects accounts that haven't customised theirs.
 
-## Changes so far (the rebrand commits at the start of `dev`, hashes after the 2026-11-02 rebase)
+## Changes so far (the rebrand commits; hashes on `merge-test` after the 2026-11-02 rebase)
+On `dev` they are `8ea1432c`, `ac048202`, `15edb188`, `91b88d32` and `ef47ef0d`, plus `9ad871dc`
+(macOS 12 deprecation fixes for Xcode 27), which `merge-test` dropped because upstream made the same
+fixes.
+
 | Commit | Summary |
 |---|---|
 | `810b2a69` | Rebrand to Companion Viewer: names, channel, packaging, English-only UI, Firestorm links/services hidden, new artwork, bundled login page |
@@ -269,18 +282,23 @@ Details worth knowing:
 ## Updating from upstream
 `upstream` is FirestormViewer's repository (`git remote add upstream
 https://github.com/FirestormViewer/phoenix-firestorm.git`); `origin/master` is only a mirror and can
-lag behind it. We rebase, so `dev` stays a readable series of our own commits:
-1. Make a worktree on a test branch (`git worktree add ../CompanionViewer-merge -b merge-test dev`)
-   and copy the chroot into it (see "A chroot can be copied"), so `dev`, its build folder and the
-   installed viewer are untouched.
-2. `git fetch upstream && git -c merge.conflictStyle=diff3 rebase upstream/master`. Recurring
-   resolutions: non-English XUI/HTML/installer files that upstream changed are deleted again
-   (`git rm`), and so are non-English files upstream added; a commit whose change upstream has made
-   itself ends up empty and is skipped. In conflicts, HEAD is upstream and the other side is ours.
-3. Build in the worktree with its own channel (e.g. `--chan=Merge`), install it to its own folder and
-   run it with its own `COMPANIONVIEWER_USER_DIR`.
-4. When it holds up, point `dev` at the test branch. That rewrites `dev`, so it needs a force-push;
-   ask first. Update the commit hashes in this file afterwards.
+lag behind it. We rebase, so both branches stay a readable series of our own commits:
+1. **`merge-test` onto upstream `master`** (the nightly), in the worktree `../CompanionViewer-merge`
+   (made with `git worktree add ../CompanionViewer-merge -b merge-test dev`, plus a copy of the
+   chroot, see "A chroot can be copied"), so `dev`, its build folder and the installed viewer are
+   untouched. Bring over new `dev` commits first (`git cherry-pick`), then
+   `git fetch upstream && git -c merge.conflictStyle=diff3 rebase upstream/master`.
+2. **`dev` onto a new release tag**, only when Firestorm tags a new `Firestorm_Release_*`: the same
+   rebase onto that tag. Most conflicts will already have been solved on `merge-test`; compare.
+3. Recurring resolutions: non-English XUI/HTML/installer files that upstream changed are deleted
+   again (`git rm`), and so are non-English files upstream added; a commit whose change upstream
+   has made itself ends up empty and is skipped. In conflicts, HEAD is upstream and the other side
+   is ours.
+4. Build with the branch's own channel (`--chan=Merge` for `merge-test`), install to its own folder
+   and run with its own `COMPANIONVIEWER_USER_DIR` (on this machine: `~/.local/opt/companionviewer-merge`,
+   `~/.companionviewer-merge`, launchers "Merge Wayland" and "Merge X11").
+5. A rebase rewrites the branch, so pushing it needs a force-push; ask first. Update the commit
+   hashes in this file afterwards.
 
 What the 7.3.0 rebase (2026-11-02) changed for us, beyond conflict resolution:
 - Dropped as redundant: our macOS Xcode 27 fixes (upstream did the same) and the Linux file-chooser
@@ -303,8 +321,14 @@ What the 7.3.0 rebase (2026-11-02) changed for us, beyond conflict resolution:
 - In-world screens haven't been reviewed in the new color scheme yet.
 - Only the macOS build has been exercised in-world, and only before the 7.3 rebase; the rebase
   hasn't been built on macOS (upstream made its own Xcode 27 fixes, so our `9ad871dc` was dropped).
-  The 7.2.5-based Linux build ran and logged in on COSMIC (Wayland, 2026-10-31) with an XWayland
-  workaround that was never committed; the 7.3 build uses SDL3 and hasn't been run yet.
+  The 7.2.5-based Linux build (`dev`, SDL2) ran and logged in on COSMIC (Wayland, 2026-10-31) only
+  with an XWayland workaround that was never committed.
+- **Native Wayland (`merge-test`, SDL3, COSMIC, 2026-11-02):** works without that workaround.
+  Started from COSMIC's launcher with no `DISPLAY`, the login page, clipboard both ways, mouselook
+  and the taskbar matching the window all passed, and mouselook felt the same as under XWayland
+  (an earlier jerky run had several viewers open, one knocked down to Low by the `RenderInitError`
+  race). COSMIC shows no taskbar flash for a new IM (it never did); the conversations tab flashes.
+  Right-click steering under load not re-checked.
 - **Linux crash reporter (new in 7.3):** its dialog still says "Send a crash report to Firestorm via
   BugSplat" and links Firestorm's privacy policy. It only runs in builds with a BugSplat database
   (`BUGSPLAT_DB`); ours have none. Rebrand it, or keep it off, before any build sets one.

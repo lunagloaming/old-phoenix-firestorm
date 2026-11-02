@@ -4075,8 +4075,17 @@ bool LLAppViewer::initWindow()
     }
 
     // Set this flag in case we crash while initializing GL
-    gSavedSettings.setBOOL("RenderInitError", true);
-    gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), true );
+    // <FS:Luna Witch> Only the first instance keeps this crash flag. Instances sharing settings.xml read
+    // each other's "true" while one was still initialising GL, then dropped to Low graphics and saved
+    // the Low settings for every instance.
+    //gSavedSettings.setBOOL("RenderInitError", true);
+    //gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), true );
+    if (!mSecondInstance)
+    {
+        gSavedSettings.setBOOL("RenderInitError", true);
+        gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), true);
+    }
+    // </FS:Luna Witch>
 
     gPipeline.init();
     LL_INFOS("AppInit") << "gPipeline Initialized" << LL_ENDL;
@@ -4084,8 +4093,15 @@ bool LLAppViewer::initWindow()
     stop_glerror();
     gViewerWindow->initGLDefaults();
 
-    gSavedSettings.setBOOL("RenderInitError", false);
-    gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), true );
+    // <FS:Luna Witch> see above
+    //gSavedSettings.setBOOL("RenderInitError", false);
+    //gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), true );
+    if (!mSecondInstance)
+    {
+        gSavedSettings.setBOOL("RenderInitError", false);
+        gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), true);
+    }
+    // </FS:Luna Witch>
 
     // If we have a startup crash, it's usually near GL initialization, so simulate that.
     if (gCrashOnStartup)
