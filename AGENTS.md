@@ -236,6 +236,13 @@ Details worth knowing:
     `PushButton_Disabled` image with a solid `LtGray` label.
 - **MOTD:** all sources are off via `FSData::MOTD_ENABLED = false` (`indra/newview/fsdata.h`).
 - **Avatar Welcome Pack:** no longer opens on first login; still reachable from the menu.
+- **Rejected keystrokes are silent:** a character a box doesn't accept (letters in a number
+  field, non-ASCII in an item name, ...) just doesn't appear. The "There was an invalid keystroke
+  entered" tip is off in `Validator::showLastErrorUsingTimeout()` (`indra/llui/lltextvalidate.cpp`),
+  and the `UISndBadKeystroke` sound is never played: not for text or number boxes
+  (`LLUI::reportBadKeystroke()`, the slider/spinner `reportInvalidData()`), arrowing past the end
+  of a list, or trying to fly where it isn't allowed. Its row in Preferences > Sound > UI Sounds is
+  hidden and it is no longer preloaded. The notification, strings and setting are kept.
 - **`_x64`:** `LLAppViewer::getSecondLifeTitle()` returns just "Companion Viewer". The user-data
   folder is also unsuffixed (`~/.companionviewer` on Linux; override with `COMPANIONVIEWER_USER_DIR`).
   Nothing migrates the old `_x64` folders. The OS cache folder name on macOS/Windows (`lldir.cpp`,

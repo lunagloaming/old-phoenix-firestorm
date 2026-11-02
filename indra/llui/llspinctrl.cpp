@@ -508,7 +508,8 @@ void LLSpinCtrl::onTabInto()
 
 void LLSpinCtrl::reportInvalidData()
 {
-    make_ui_sound("UISndBadKeystroke");
+    // Companion Viewer: an out-of-range or invalid number typed into the box is silent.
+    // make_ui_sound("UISndBadKeystroke");
 }
 
 bool LLSpinCtrl::handleScrollWheel(S32 x, S32 y, S32 clicks)

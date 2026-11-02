@@ -3014,7 +3014,8 @@ bool LLScrollListCtrl::handleUnicodeCharHere(llwchar uni_char)
 
 void LLScrollListCtrl::reportInvalidInput()
 {
-    make_ui_sound("UISndBadKeystroke");
+    // Companion Viewer: arrowing past the top or bottom of a list is silent.
+    // make_ui_sound("UISndBadKeystroke");
 }
 
 bool LLScrollListCtrl::isRepeatedChars(const LLWString& string) const

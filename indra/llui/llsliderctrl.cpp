@@ -484,6 +484,7 @@ void LLSliderCtrl::onTabInto()
 
 void LLSliderCtrl::reportInvalidData()
 {
-    make_ui_sound("UISndBadKeystroke");
+    // Companion Viewer: an out-of-range or invalid number typed into the box is silent.
+    // make_ui_sound("UISndBadKeystroke");
 }
 

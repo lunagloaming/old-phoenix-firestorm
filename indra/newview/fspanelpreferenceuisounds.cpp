@@ -140,7 +140,8 @@ void FSPanelPreferenceUISounds::buildList()
     {
         mEntries = {
             makeEntry("UISndAlert"),
-            makeEntry("UISndBadKeystroke"),
+            // Companion Viewer: the bad-keystroke sound is never played, so its row is hidden.
+            //makeEntry("UISndBadKeystroke"),
             makeEntry("UISndClick"),
             makeEntry("UISndClickRelease"),
             makeEntry("UISndHealthReductionF"),

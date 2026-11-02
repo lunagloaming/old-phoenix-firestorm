@@ -1050,10 +1050,11 @@ void LLAgent::setFlying(bool fly, bool fail_sound)
             // parcel doesn't let you start fly
             // gods can always fly
             // and it's OK if you're already flying
-            if (fail_sound)
-            {
-                make_ui_sound("UISndBadKeystroke");
-            }
+            // Companion Viewer: the bad-keystroke sound is never played, here included.
+            //if (fail_sound)
+            //{
+            //    make_ui_sound("UISndBadKeystroke");
+            //}
             return;
         }
         if( !was_flying )
