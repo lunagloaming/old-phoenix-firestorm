@@ -92,6 +92,16 @@ rootless Ubuntu 24.04 chroot.
    time, as `PACKAGE:BOOL=OFF` in the CMake cache). `packaged/` is still filled, but the strip
    and `.tar.xz` steps are skipped, so the binary there keeps its debug info (~3 GB), which
    gives line numbers in `coredumpctl` backtraces. Reconfigure without it for a release tarball.
+   The local install (step 3) is refreshed from a `--no-package` build; it is then about 3.7 GB.
+
+   **Configure in a fresh build folder may fail once or twice** with `Could not find
+   COLLADADOM_LIBRARY` or `NDOF_LIBRARY`, although the library was just downloaded into
+   `build-linux-x86_64/packages/lib/release`. Re-running the same configure command picks it up;
+   it passed on the third run on 2026-11-01.
+
+   **A chroot can be copied** instead of recreated: `.chroot/enter` finds the repo from its own
+   location. Copy it inside a user namespace so the subuid-owned files come along:
+   `unshare --map-auto --map-root-user cp -a --reflink=auto <other-clone>/.chroot .chroot`.
 
    **Measured full build (2026-10-31, clean checkout and fresh chroot):** 15 min 19 s wall clock for
    the command above (configure, library downloads and the ~70 s CMake step included; 1358 ninja
@@ -100,6 +110,20 @@ rootless Ubuntu 24.04 chroot.
    7.3.0) host, `--jobs 14`. Peak system RAM in use during the build was about 25 GiB (whole
    machine, desktop included), so 16 GB machines should lower `--jobs`. A shallow clone gives build
    number `.31` (`git rev-list --count HEAD`) instead of the upstream revision count; harmless.
+
+   **Heat (same machine, 2026-11-01):** at the board's stock power limits (PL1 = PL2 = 253 W) a
+   `--jobs 14` build reaches 98–100 °C and the CPU throttles. With both limits at 160 W it stays at
+   85–88 °C without throttling, but the last steps, when only a few jobs run, still spike to 99 °C:
+   a power limit doesn't restrain a few cores boosting to 5.5 GHz. A clean `--no-package` rebuild
+   took 10 min 41 s with the limits at 160–175 W. With BIOS limits of 180 W and CPU Lite Load 12
+   (down from 16) a clean `--no-package` rebuild took 10 min 24 s and was stable (0 compiler
+   errors, 0 machine-check errors), but ran at 89–92 °C, peaked at 97 °C and throttled 154 times,
+   mostly on the P-cores. With Lite Load 12, a 170 W cap and P-cores capped at 5.4 GHz
+   (`cpupower frequency-set -u 5.4GHz`) the rebuild took 10 min 26 s at 86–91 °C, peaked at 93 °C
+   and did not throttle; the only throttling (12 events) came in the last one-job steps after the
+   cap had been raised back to 5.5 GHz. Limits set from Linux
+   (`/sys/class/powercap/intel-rapl:0/constraint_{0,1}_power_limit_uw`, root) last until reboot;
+   the lasting fix belongs in the BIOS (power limits, CPU Lite Load, a 90 °C temperature limit).
 3. **Never run from `packaged/`.** Packaging deletes and recreates it, which breaks a running viewer
    (SSL CA errors, then a crash opening Preferences). Install a copy and run that:
    ```sh
