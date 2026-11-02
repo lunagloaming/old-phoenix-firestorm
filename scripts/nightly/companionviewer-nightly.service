@@ -1,0 +1,11 @@
+[Unit]
+Description=Companion Viewer nightly: rebase on upstream Firestorm master, build, install
+Documentation=file://%h/Projects/CompanionViewer/scripts/nightly/README.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/companionviewer-update-nightly
+# Stay out of the way: lowest CPU and I/O priority. The build itself also uses fewer jobs.
+Nice=19
+IOSchedulingClass=idle
+TimeoutStartSec=3h

@@ -6,9 +6,16 @@ Notes for coding agents (and humans) resuming work on this repo from any machine
 Companion Viewer is a fork of the Firestorm Second Life viewer (tag
 `Firestorm_Release_7.2.5.81788`), rebranded as **"Companion Viewer"** (display name) /
 **`CompanionViewer`** (files, channel, folders, binaries). It is not affiliated with or supported
-by the Firestorm project. All work is on **`dev`** (base: `master`, the upstream Firestorm
-mirror), including the rebrand and the multibox-memory port. The old `companion-rebrand` branch is
-gone; its commits are the start of `dev`.
+by the Firestorm project. Our work (the rebrand, the multibox-memory port, ...) is a linear series
+of commits kept on two branches (owner's decision, 2026-11-02):
+- **`dev`** (channel **CompanionViewer-Release**): on the last official Firestorm release tag,
+  now `Firestorm_Release_7.2.5.81788`. It moves only when Firestorm tags a new release. New work
+  lands here.
+- **`merge-test`** (channel **CompanionViewer-Nightly**): the same commits rebased on upstream
+  Firestorm `master` (remote `upstream`), in the worktree `../CompanionViewer-merge`. A nightly
+  job carries new `dev` commits over, rebases, builds and installs it, and stops for a person on
+  any real conflict: [`scripts/nightly/README.md`](scripts/nightly/README.md). That branch's own
+  `AGENTS.md` describes the 7.3 differences and the manual procedure.
 
 ## Owner preferences
 - **No Python for new code.** Helpers, plugins and tooling we add are written in **Rust** (or in the
@@ -81,10 +88,10 @@ rootless Ubuntu 24.04 chroot.
    must be cloned first (see the macOS section, step 1; the Xcode deployment-target edit is macOS-only).
 2. **Build:**
    ```sh
-   .chroot/enter bash -c 'autobuild configure -A 64 -c ReleaseFS_open -- --ninja --jobs 14 --chan=Alpha -DLL_TESTS:BOOL=FALSE &&
-     autobuild build -A 64 -c ReleaseFS_open --no-configure -- --ninja --jobs 14 --chan=Alpha -DLL_TESTS:BOOL=FALSE'
+   .chroot/enter bash -c 'autobuild configure -A 64 -c ReleaseFS_open -- --ninja --jobs 14 --chan=Release -DLL_TESTS:BOOL=FALSE &&
+     autobuild build -A 64 -c ReleaseFS_open --no-configure -- --ninja --jobs 14 --chan=Release -DLL_TESTS:BOOL=FALSE'
    ```
-   `--chan=Alpha` gives the channel `CompanionViewer-Alpha` (the name is prepended; don't pass
+   `--chan=Release` gives the channel `CompanionViewer-Release` (the name is prepended; don't pass
    `CompanionViewer`). Output: `build-linux-x86_64/newview/packaged/`. A change to a widely
    included header recompiles ~180 files.
 
@@ -127,11 +134,11 @@ rootless Ubuntu 24.04 chroot.
 3. **Never run from `packaged/`.** Packaging deletes and recreates it, which breaks a running viewer
    (SSL CA errors, then a crash opening Preferences). Install a copy and run that:
    ```sh
-   rsync -rptgoDLK --exclude='bin/.debug' build-linux-x86_64/newview/packaged/ ~/.local/opt/companionviewer-alpha/
-   chmod 755 ~/.local/opt/companionviewer-alpha/bin/{dullahan_host,chrome-sandbox,SLVoice}
+   rsync -rptgoDLK --exclude='bin/.debug' build-linux-x86_64/newview/packaged/ ~/.local/opt/companionviewer-release/
+   chmod 755 ~/.local/opt/companionviewer-release/bin/{dullahan_host,chrome-sandbox,SLVoice}
    ```
    Check no viewer is running before the rsync. The launcher is
-   `~/.local/share/applications/companionviewer-alpha.desktop` (outside the repo).
+   `~/.local/share/applications/companionviewer-release.desktop` (outside the repo).
 4. **User data:** `~/.companionviewer` (override: `COMPANIONVIEWER_USER_DIR`). Log:
    `~/.companionviewer/logs/CompanionViewer.log`.
 
