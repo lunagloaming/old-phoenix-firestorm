@@ -69,6 +69,21 @@ exportMutliArchDRIPath() {
 export __GL_THREADED_OPTIMIZATIONS="${__GL_THREADED_OPTIMIZATIONS:-1}"
 # </FS:Luna Witch>
 
+## Companion Viewer: run under XWayland on Wayland desktops. The viewer still uses X11
+## directly (clipboard, window hints), and web pages such as the login screen stay black
+## when CEF falls back to Wayland. Some launchers (COSMIC's) start apps without DISPLAY,
+## so take it from the user session. Set SDL_VIDEODRIVER=wayland to try native Wayland.
+if [ -z "$DISPLAY" ] && [ -n "$WAYLAND_DISPLAY" ]; then
+    _session_display="$(systemctl --user show-environment 2>/dev/null | sed -n 's/^DISPLAY=//p')"
+    if [ -n "$_session_display" ]; then
+        export DISPLAY="$_session_display"
+    fi
+    unset _session_display
+fi
+if [ -n "$DISPLAY" ]; then
+    export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-x11}"
+fi
+
 if [ "`uname -m`" = "x86_64" ]; then
     echo '64-bit Linux detected.'
 fi

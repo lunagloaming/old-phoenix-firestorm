@@ -217,7 +217,9 @@ LLNotificationForm::LLNotificationForm(const std::string& name, const LLNotifica
             ui_inst->mSettingGroups["ignores"]->declareLLSD(std::string("Default") + name, "", std::string("Default response for notification " + name));
         }
 
-        bool show_notification = true;
+        // Companion Viewer: every alert listed in Preferences > Notifications > Alerts starts
+        // hidden (unchecked); users turn on the ones they want.
+        bool show_notification = false;
         if (p.ignore.control.isProvided())
         {
             mIgnoreSetting = ui_inst->mSettingGroups["config"]->getControl(p.ignore.control());

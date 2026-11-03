@@ -86,6 +86,11 @@ rootless Ubuntu 24.04 chroot.
    `CompanionViewer`). Output: `build-linux-x86_64/newview/packaged/`. A change to a widely
    included header recompiles ~180 files.
 
+   **Development builds: add `--no-package`** to both commands (it takes effect at configure
+   time, as `PACKAGE:BOOL=OFF` in the CMake cache). `packaged/` is still filled, but the strip
+   and `.tar.xz` steps are skipped, so the binary there keeps its debug info (~3 GB), which
+   gives line numbers in `coredumpctl` backtraces. Reconfigure without it for a release tarball.
+
    **Measured full build (2026-10-31, clean checkout and fresh chroot):** 15 min 19 s wall clock for
    the command above (configure, library downloads and the ~70 s CMake step included; 1358 ninja
    steps; packaging and the `.tar.xz` included), 0 errors, 0 warnings. Machine: Intel Core i7-14700K
@@ -103,6 +108,11 @@ rootless Ubuntu 24.04 chroot.
    `~/.local/share/applications/companionviewer-alpha.desktop` (outside the repo).
 4. **User data:** `~/.companionviewer` (override: `COMPANIONVIEWER_USER_DIR`). Log:
    `~/.companionviewer/logs/CompanionViewer.log`.
+5. **Wayland:** the viewer runs under XWayland. The `companionviewer` wrapper sets
+   `SDL_VIDEODRIVER=x11` and, when a launcher leaves `DISPLAY` empty (COSMIC's does), takes it
+   from `systemctl --user show-environment`. Native Wayland (`SDL_VIDEODRIVER=wayland`) starts
+   since `LLWindowSDL::setMinSize` uses SDL, but the clipboard, IM flash and pointer grab are
+   X11-only, and the login page is black (CEF on its Wayland backend).
 
 ## Running several viewers
 Work ported from the `multibox-memory` branch of `../multibox-memory` (cherry-picked, tags
@@ -132,6 +142,17 @@ and radar options, RLVa on, ...) are the shipped defaults in `app_settings/setti
 `settings_per_account.xml`. Graphics and hardware tuning is left to the viewer's autodetection;
 don't copy those from a used profile. A used profile's `settings.xml` lists only values that differ
 from the defaults, but that includes autodetected and session state.
+
+Every alert in Preferences > Notifications > Alerts also starts hidden (unchecked). That default
+is set in `LLNotificationForm` (`indra/llui/llnotifications.cpp`), not in a settings file; the
+user's choices are saved in `user_settings/ignorable_dialogs.xml`.
+
+Two other places hold defaults that `settings.xml` does not:
+- The viewer-mode file. A new install uses `app_settings/settings_firestorm.xml`, whose values
+  replace the `settings.xml` defaults ("The session file turns into the new defaults" in
+  `llappviewer.cpp`). `LetterKeysAffectsMovementNotFocusChatBar` is set to 1 there for this reason.
+- `app_settings/key_bindings.xml`. Double-click on land to teleport is the `Double LMB` →
+  `teleport_to` binding in `third_person`; `DoubleClickTeleport` alone doesn't turn it on.
 
 ## Changes so far (branch `companion-rebrand`; work now continues on `dev`)
 | Commit | Summary |
@@ -180,7 +201,19 @@ Details worth knowing:
 - Background data feeds (grid list, grid status, fsdata) still use Firestorm servers;
   `defaults.7.2.5.xml` from phoenixviewer.com returns 403 to this viewer.
 - In-world screens haven't been reviewed in the new color scheme yet.
-- Only the macOS build has been exercised in-world. The Linux build compiles, packages and installs (2026-10-31) but has not been run yet.
+- Only the macOS build has been exercised in-world. The Linux build runs on Linux (COSMIC on
+  Wayland, through XWayland) and logs in (2026-10-31).
+- **Decision pending (owner): more new-install defaults.** These preferences from the tester's old
+  profile (`~/.firestorm_multibox`) are not defaults yet; the owner will say which to take:
+  - Radar: report leaving chat range, and entering/leaving draw distance and the region, each with
+    its sound (`RadarReportChatRangeLeave`, `RadarReport{Draw,Sim}Range{Enter,Leave}`,
+    `PlayModeUISndRadar{ChatLeave,DrawEnter,DrawLeave,SimEnter,SimLeave}` = 1).
+  - Sound: `AudioLevelUI` 0.1 (default 0.5); `PlayModeUISndTyping` 0.
+  - Maturity: `PreferredMaturity` 42 (Adult), `ShowAdultSims` 1, `ShowMatureLand` 0,
+    `ShowMatureClassifieds` 0.
+  - Other: `ShowNewInventory` 0, `HeightUnits` 0, `LSLFindCaseInsensitivity` 1, `ForceShowGrid` 1,
+    `QAMode` 1, `FramePerSecondLimit` 20.
+  - Per account: the custom `DoNotDisturbModeResponse` (same text on all 12 accounts).
 
 ## Next feature: LLM companion agent (planned, not started)
 Full plan: [`doc/companion-agent-plan.md`](doc/companion-agent-plan.md). Summary:
